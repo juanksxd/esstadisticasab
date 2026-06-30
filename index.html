@@ -781,8 +781,16 @@
         .adv-bad  { color: var(--red); }
         .tooltip-cell {
             position: relative;
+            cursor: help;
         }
-        .tooltip-cell:hover::after {
+        .info-ico {
+            font-size: 0.65em;
+            opacity: 0.55;
+            margin-left: 2px;
+            font-style: normal;
+        }
+        .tooltip-cell:hover::after,
+        .tooltip-cell.tooltip-active::after {
             content: attr(data-tip);
             position: absolute;
             bottom: 120%;
@@ -790,13 +798,61 @@
             transform: translateX(-50%);
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 5px;
-            padding: 0.25rem 0.5rem;
-            font-size: 0.6rem;
-            white-space: nowrap;
-            z-index: 10;
+            border-radius: 6px;
+            padding: 0.4rem 0.6rem;
+            font-size: 0.65rem;
+            font-weight: 400;
+            white-space: normal;
+            width: max-content;
+            max-width: 200px;
+            text-align: center;
+            line-height: 1.35;
+            z-index: 50;
             color: var(--text);
             pointer-events: none;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+        }
+
+        /* ===== MODO SIMPLE / AVANZADO ===== */
+        .stats-mode-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.5rem 1rem;
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            font-size: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .stats-mode-bar .label {
+            color: var(--muted);
+            font-size: 0.7rem;
+        }
+        .stats-mode-btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            border-radius: 999px;
+            padding: 0.3rem 0.85rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .stats-mode-btn:hover {
+            border-color: var(--accent);
+            color: var(--text);
+        }
+        .stats-mode-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #1a1d2e;
+        }
+        body.simple-mode .adv-col {
+            display: none !important;
+        }
+        body.simple-mode .tab-btn[data-tab="advanced"] {
+            display: none !important;
         }
 
         @media print {
@@ -871,6 +927,13 @@
          /data/manifest.json y los controles de carga manual están ocultos.
          Para reactivar la carga manual (modo administrador/edición), cambia
          READ_ONLY_MODE a false más abajo en el script. -->
+
+    <div class="stats-mode-bar">
+        <span class="label">¿Cómo quieres ver las estadísticas?</span>
+        <button class="stats-mode-btn active" id="statsModeSimpleBtn" data-mode="simple">🙂 Simple</button>
+        <button class="stats-mode-btn" id="statsModeAdvBtn" data-mode="avanzado">🔬 Avanzado</button>
+        <span class="label" style="margin-left:0.3rem;">— en Simple ocultamos las métricas más técnicas. Toca el ⓘ junto a cualquier sigla para ver qué significa.</span>
+    </div>
 
     <!-- STATS GRID -->
     <div class="stats-grid" id="statsGrid">
@@ -1158,6 +1221,7 @@
         let comparePlayers = [];
         let comparePitchers = [];
         let compareMode = 'bat'; // 'bat' | 'pitch'
+        let statsMode = 'simple'; // 'simple' | 'avanzado' — controla qué tan técnica se ve la app
         let charts = {};
         let teamNameMap = {};
         let awayTeamsSet = new Set(); // tracks all teams that have played as away
@@ -1527,6 +1591,71 @@
         }
 
         // ============================================================
+        //  GLOSARIO — explicaciones en español sencillo para cada sigla
+        // ============================================================
+        // Se usa para los tooltips (ⓘ) en encabezados de tabla y en la
+        // tabla de Comparar. Pensado para alguien que NO sabe de sabermetría:
+        // evita jerga y explica qué significa el número en una frase corta.
+        const STAT_GLOSSARY = {
+            PJ:   'Partidos jugados',
+            AB:   'Turnos al bate (no cuentan boletos ni sacrificios)',
+            PA:   'Apariciones al plato: todos los turnos, incluyendo boletos y sacrificios',
+            H:    'Hits conectados (imparables)',
+            '1B': 'Sencillos (hit de una base)',
+            '2B': 'Dobles (hit de dos bases)',
+            '3B': 'Triples (hit de tres bases)',
+            HR:   'Jonrones',
+            R:    'Carreras anotadas por el jugador',
+            RBI:  'Carreras impulsadas: las que el jugador remolcó con su bateo',
+            BB:   'Bases por bolas (boletos)',
+            K:    'Ponches (veces que se ponchó)',
+            AVG:  'Promedio de bateo: de cada 10 turnos, cuántos hits conecta en promedio',
+            OBP:  'Porcentaje de embasarse: qué tan seguido llega a base (hit, boleto o golpe)',
+            SLG:  'Slugging: mide el poder de bateo, las bases totales que produce por turno',
+            OPS:  'OBP + SLG juntos: una sola cifra para ver qué tan completo es un bateador',
+            wOBA: 'Embase ponderado: parecido a OBP pero valora más los jonrones que los boletos',
+            ISO:  'Poder aislado (SLG menos AVG): mide la potencia pura, sin contar los sencillos',
+            BABIP:'Promedio de bateo solo en pelotas puestas en juego: ayuda a ver si tuvo suerte',
+            'RC/27': 'Carreras que crearía este jugador si bateara una entrada completa de 27 outs él solo',
+            'K%': 'Porcentaje de turnos que terminan en ponche',
+            'BB%': 'Porcentaje de turnos que terminan en base por bolas',
+            'CT%': 'Porcentaje de turnos donde hizo contacto con la bola (no se ponchó)',
+            'XBH%': 'Porcentaje de sus hits que fueron de extrabase (doble, triple o jonrón)',
+            W:    'Juegos ganados como pitcher',
+            L:    'Juegos perdidos como pitcher',
+            S:    'Salvamentos (rescates)',
+            IP:   'Entradas lanzadas',
+            ER:   'Carreras limpias permitidas (sin contar errores defensivos)',
+            ERA:  'Efectividad: promedio de carreras limpias permitidas cada 7 entradas — entre menos, mejor',
+            WHIP: 'Bateadores que le llegan a base (hits + boletos) por cada entrada lanzada — entre menos, mejor',
+            'K/9': 'Ponches que saca cada 9 entradas',
+            'BB/9': 'Boletos que otorga cada 9 entradas',
+            BAA:  'Promedio de bateo que le permite a los bateadores rivales',
+            FIP:  'Efectividad estimada usando solo lo que el pitcher controla: ponches, boletos y jonrones',
+            PO:   'Putouts: outs que el jugador hizo directamente (atrapar un fly, pisar la base, etc.)',
+            A:    'Asistencias: jugadas donde ayudó a sacar a un corredor sin ser él quien hizo el out final',
+            E:    'Errores defensivos cometidos',
+            OPP:  'Total de jugadas defensivas en las que participó (PO + A + E)',
+            'FLD%': 'Porcentaje de jugadas defensivas bien hechas — entre más cerca de 1.000, mejor',
+            INN:  'Entradas jugadas a la defensiva',
+        };
+
+        // Genera un <th> con tooltip (ⓘ) si la sigla está en el glosario; si no, un <th> simple.
+        function gTh(label, key) {
+            const tip = STAT_GLOSSARY[key];
+            if (!tip) return `<th class="text-center">${label}</th>`;
+            return `<th class="text-center tooltip-cell" data-tip="${tip.replace(/"/g, '&quot;')}">${label}<sup class="info-ico">ⓘ</sup></th>`;
+        }
+
+        // Igual que gTh pero envuelve solo el texto (para usar dentro de una celda <td> ya existente,
+        // como la primera columna "Métrica" de las tablas de Comparar).
+        function gSpan(label, key) {
+            const tip = STAT_GLOSSARY[key];
+            if (!tip) return label;
+            return `<span class="tooltip-cell" data-tip="${tip.replace(/"/g, '&quot;')}">${label}<sup class="info-ico">ⓘ</sup></span>`;
+        }
+
+        // ============================================================
         //  MOTOR DE COMPARACIÓN — fortalezas/debilidades relativas
         // ============================================================
         // Todo este bloque compara SIEMPRE entre los jugadores seleccionados
@@ -1536,26 +1665,28 @@
 
         // Filas de la tabla de comparación, agrupadas por sección.
         // higherBetter: true = mayor es mejor, false = menor es mejor, null = solo contexto (sin color)
+        // tipKey: clave en STAT_GLOSSARY para el tooltip de esta fila.
+        // advanced: true = esta fila se oculta en "Modo Simple" (solo se ve en Modo Avanzado).
         const COMPARE_METRICS = [
             // — BATEO —
-            { group: 'bateo', label: 'AVG',           higherBetter: true,  value: p => calculateBattingAVG(p),     format: v => formatAvg(v) },
-            { group: 'bateo', label: 'OBP',           higherBetter: true,  value: p => calculateBattingOBP(p),     format: v => formatAvg(v) },
-            { group: 'bateo', label: 'SLG',           higherBetter: true,  value: p => calculateBattingSLG(p),     format: v => formatAvg(v) },
-            { group: 'bateo', label: 'OPS',           higherBetter: true,  value: p => calculateBattingOPS(p),     format: v => v.toFixed(3) },
-            { group: 'bateo', label: 'ISO (poder)',   higherBetter: true,  value: p => calculateISO(p),            format: v => formatAvg(v) },
-            { group: 'bateo', label: 'HR',            higherBetter: true,  value: p => p.hr || 0,                  format: v => String(v) },
-            { group: 'bateo', label: 'RBI',           higherBetter: true,  value: p => p.rbi || 0,                 format: v => String(v) },
-            { group: 'bateo', label: 'Carreras (R)',  higherBetter: true,  value: p => p.runs || 0,                format: v => String(v) },
-            { group: 'bateo', label: 'Hits',          higherBetter: true,  value: p => calculateHits(p),           format: v => String(v) },
-            { group: 'bateo', label: 'BB%',           higherBetter: true,  value: p => calculateBBPercent(p),      format: v => v.toFixed(1) + '%' },
-            { group: 'bateo', label: 'K%',            higherBetter: false, value: p => calculateKPercent_bat(p),   format: v => v.toFixed(1) + '%' },
-            { group: 'bateo', label: 'AB',            higherBetter: null,  value: p => p.atBats || 0,              format: v => String(v) },
+            { group: 'bateo', label: 'AVG',           higherBetter: true,  tipKey: 'AVG', value: p => calculateBattingAVG(p),     format: v => formatAvg(v) },
+            { group: 'bateo', label: 'OBP',           higherBetter: true,  tipKey: 'OBP', value: p => calculateBattingOBP(p),     format: v => formatAvg(v) },
+            { group: 'bateo', label: 'SLG',           higherBetter: true,  tipKey: 'SLG', value: p => calculateBattingSLG(p),     format: v => formatAvg(v) },
+            { group: 'bateo', label: 'OPS',           higherBetter: true,  tipKey: 'OPS', value: p => calculateBattingOPS(p),     format: v => v.toFixed(3) },
+            { group: 'bateo', label: 'ISO (poder)',   higherBetter: true,  tipKey: 'ISO', advanced: true, value: p => calculateISO(p),            format: v => formatAvg(v) },
+            { group: 'bateo', label: 'HR',            higherBetter: true,  tipKey: 'HR',  value: p => p.hr || 0,                  format: v => String(v) },
+            { group: 'bateo', label: 'RBI',           higherBetter: true,  tipKey: 'RBI', value: p => p.rbi || 0,                 format: v => String(v) },
+            { group: 'bateo', label: 'Carreras (R)',  higherBetter: true,  tipKey: 'R',   value: p => p.runs || 0,                format: v => String(v) },
+            { group: 'bateo', label: 'Hits',          higherBetter: true,  tipKey: 'H',   value: p => calculateHits(p),           format: v => String(v) },
+            { group: 'bateo', label: 'BB%',           higherBetter: true,  tipKey: 'BB%', advanced: true, value: p => calculateBBPercent(p),      format: v => v.toFixed(1) + '%' },
+            { group: 'bateo', label: 'K%',            higherBetter: false, tipKey: 'K%',  advanced: true, value: p => calculateKPercent_bat(p),   format: v => v.toFixed(1) + '%' },
+            { group: 'bateo', label: 'AB',            higherBetter: null,  tipKey: 'AB',  value: p => p.atBats || 0,              format: v => String(v) },
             // — DEFENSA —
-            { group: 'defensa', label: 'PO',          higherBetter: true,  value: p => p.putouts || 0,             format: v => String(v) },
-            { group: 'defensa', label: 'A',           higherBetter: true,  value: p => p.assists || 0,             format: v => String(v) },
-            { group: 'defensa', label: 'Errores (E)', higherBetter: false, value: p => p.errors || 0,              format: v => String(v) },
-            { group: 'defensa', label: 'FLD%',        higherBetter: true,  value: p => calculateFieldingPercent(p),format: v => formatAvg(v) },
-            { group: 'defensa', label: 'Lances (PO+A+E)', higherBetter: null, value: p => calculateOPP(p),         format: v => String(v) },
+            { group: 'defensa', label: 'PO',          higherBetter: true,  tipKey: 'PO',  value: p => p.putouts || 0,             format: v => String(v) },
+            { group: 'defensa', label: 'A',           higherBetter: true,  tipKey: 'A',   value: p => p.assists || 0,             format: v => String(v) },
+            { group: 'defensa', label: 'Errores (E)', higherBetter: false, tipKey: 'E',   value: p => p.errors || 0,              format: v => String(v) },
+            { group: 'defensa', label: 'FLD%',        higherBetter: true,  tipKey: 'FLD%',value: p => calculateFieldingPercent(p),format: v => formatAvg(v) },
+            { group: 'defensa', label: 'Lances (PO+A+E)', higherBetter: null, tipKey: 'OPP', advanced: true, value: p => calculateOPP(p),         format: v => String(v) },
         ];
 
         // Categorías "destacadas" usadas para las etiquetas de Fortalezas/Debilidades
@@ -1619,9 +1750,10 @@
         function renderComparisonTable(players) {
             const colors = ['var(--blue)', 'var(--accent)', 'var(--green)', 'var(--pink)'];
             const groupLabels = { bateo: '⚾ BATEO', defensa: '🧤 DEFENSA' };
+            const metrics = statsMode === 'avanzado' ? COMPARE_METRICS : COMPARE_METRICS.filter(m => !m.advanced);
 
             let lastGroup = null;
-            const rows = COMPARE_METRICS.map(metric => {
+            const rows = metrics.map(metric => {
                 const values = players.map(p => metric.value(p) || 0);
                 const { bestSet, worstSet } = getMetricRanking(values, metric.higherBetter);
 
@@ -1643,7 +1775,7 @@
 
                 return `${groupHeaderHtml}
                         <tr>
-                            <td>${metric.label}</td>
+                            <td>${gSpan(metric.label, metric.tipKey)}</td>
                             ${cellsHtml}
                         </tr>`;
             }).join('');
@@ -1664,6 +1796,7 @@
                     🟢 Mejor del grupo &nbsp;·&nbsp; 🔴 Peor del grupo &nbsp;·&nbsp;
                     La comparación es solo entre estos ${players.length} jugadores, no contra la liga.
                     Con pocos turnos al bate o lances de campo, estas métricas pueden no ser representativas.
+                    Toca el ⓘ de cada fila para ver qué significa.
                 </p>`;
         }
 
@@ -1675,19 +1808,19 @@
         // contexto y no se colorean porque dependen mucho de cuánto pitcheó cada uno.
 
         const PITCH_COMPARE_METRICS = [
-            { group: 'pitcheo', label: 'ERA',            higherBetter: false, value: p => calculateERA(p, getStandardInnings()), format: v => v.toFixed(2) },
-            { group: 'pitcheo', label: 'WHIP',           higherBetter: false, value: p => calculateWHIP(p),                      format: v => v.toFixed(2) },
-            { group: 'pitcheo', label: 'K/9',            higherBetter: true,  value: p => calculateKPer9(p),                     format: v => v.toFixed(1) },
-            { group: 'pitcheo', label: 'BB/9',           higherBetter: false, value: p => calculateBBPer9(p),                    format: v => v.toFixed(1) },
-            { group: 'pitcheo', label: 'K%',             higherBetter: true,  value: p => calculateKPercent(p),                  format: v => v.toFixed(1) + '%' },
-            { group: 'pitcheo', label: 'BAA',            higherBetter: false, value: p => calculateBAA(p),                       format: v => formatAvg(v) },
-            { group: 'pitcheo', label: 'FIP',            higherBetter: false, value: p => calculateFIP(p),                       format: v => v.toFixed(2) },
-            { group: 'pitcheo', label: 'IP',             higherBetter: null,  value: p => p.outs || 0,                           format: v => formatInnings(v) },
-            { group: 'pitcheo', label: 'H permitidos',   higherBetter: null,  value: p => p.hits || 0,                           format: v => String(v) },
-            { group: 'pitcheo', label: 'HR permitidos',  higherBetter: null,  value: p => p.hr || 0,                             format: v => String(v) },
-            { group: 'pitcheo', label: 'BB otorgadas',   higherBetter: null,  value: p => p.bb || 0,                             format: v => String(v) },
-            { group: 'pitcheo', label: 'K (total)',      higherBetter: null,  value: p => p.strikeouts || 0,                     format: v => String(v) },
-            { group: 'pitcheo', label: 'Récord (W-L)',   higherBetter: null,  value: p => `${p.wins || 0}-${p.losses || 0}`,     format: v => v },
+            { group: 'pitcheo', label: 'ERA',            higherBetter: false, tipKey: 'ERA',  value: p => calculateERA(p, getStandardInnings()), format: v => v.toFixed(2) },
+            { group: 'pitcheo', label: 'WHIP',           higherBetter: false, tipKey: 'WHIP', value: p => calculateWHIP(p),                      format: v => v.toFixed(2) },
+            { group: 'pitcheo', label: 'K/9',            higherBetter: true,  tipKey: 'K/9',  advanced: true, value: p => calculateKPer9(p),                     format: v => v.toFixed(1) },
+            { group: 'pitcheo', label: 'BB/9',           higherBetter: false, tipKey: 'BB/9', advanced: true, value: p => calculateBBPer9(p),                    format: v => v.toFixed(1) },
+            { group: 'pitcheo', label: 'K%',             higherBetter: true,  tipKey: 'K%',   advanced: true, value: p => calculateKPercent(p),                  format: v => v.toFixed(1) + '%' },
+            { group: 'pitcheo', label: 'BAA',            higherBetter: false, tipKey: 'BAA',  advanced: true, value: p => calculateBAA(p),                       format: v => formatAvg(v) },
+            { group: 'pitcheo', label: 'FIP',            higherBetter: false, tipKey: 'FIP',  advanced: true, value: p => calculateFIP(p),                       format: v => v.toFixed(2) },
+            { group: 'pitcheo', label: 'IP',             higherBetter: null,  tipKey: 'IP',   value: p => p.outs || 0,                           format: v => formatInnings(v) },
+            { group: 'pitcheo', label: 'H permitidos',   higherBetter: null,  tipKey: 'H',    value: p => p.hits || 0,                           format: v => String(v) },
+            { group: 'pitcheo', label: 'HR permitidos',  higherBetter: null,  tipKey: 'HR',   value: p => p.hr || 0,                             format: v => String(v) },
+            { group: 'pitcheo', label: 'BB otorgadas',   higherBetter: null,  tipKey: 'BB',   value: p => p.bb || 0,                             format: v => String(v) },
+            { group: 'pitcheo', label: 'K (total)',      higherBetter: null,  tipKey: 'K',    value: p => p.strikeouts || 0,                     format: v => String(v) },
+            { group: 'pitcheo', label: 'Récord (W-L)',   higherBetter: null,                  value: p => `${p.wins || 0}-${p.losses || 0}`,     format: v => v },
         ];
 
         // Categorías curadas para las etiquetas de Fortalezas/Debilidades de pitchers
@@ -1722,9 +1855,10 @@
         function renderPitchingComparisonTable(players) {
             const colors = ['var(--blue)', 'var(--accent)', 'var(--green)', 'var(--pink)'];
             const groupLabels = { pitcheo: '🥎 PITCHEO' };
+            const metrics = statsMode === 'avanzado' ? PITCH_COMPARE_METRICS : PITCH_COMPARE_METRICS.filter(m => !m.advanced);
 
             let lastGroup = null;
-            const rows = PITCH_COMPARE_METRICS.map(metric => {
+            const rows = metrics.map(metric => {
                 const values = players.map(p => metric.value(p) || 0);
                 const { bestSet, worstSet } = getMetricRanking(values, metric.higherBetter);
 
@@ -1746,7 +1880,7 @@
 
                 return `${groupHeaderHtml}
                         <tr>
-                            <td>${metric.label}</td>
+                            <td>${gSpan(metric.label, metric.tipKey)}</td>
                             ${cellsHtml}
                         </tr>`;
             }).join('');
@@ -1767,6 +1901,7 @@
                     🟢 Mejor del grupo &nbsp;·&nbsp; 🔴 Peor del grupo &nbsp;·&nbsp;
                     La comparación es solo entre estos ${players.length} pitchers, no contra la liga.
                     Las filas de volumen (IP, H, HR, BB, K, récord) son contexto y no se colorean porque dependen de cuánto pitcheó cada uno.
+                    Toca el ⓘ de cada fila para ver qué significa.
                 </p>`;
         }
 
@@ -2925,24 +3060,24 @@
                             <th>Jugador</th>
                             <th>Pos</th>
                             <th>Equipo</th>
-                            <th class="text-center">PJ</th>
-                            <th class="text-center">AB</th>
-                            <th class="text-center">PA</th>
-                            <th class="text-center">H</th>
-                            <th class="text-center">1B</th>
-                            <th class="text-center">2B</th>
-                            <th class="text-center">3B</th>
-                            <th class="text-center">HR</th>
-                            <th class="text-center">R</th>
-                            <th class="text-center">RBI</th>
-                            <th class="text-center">BB</th>
-                            <th class="text-center">K</th>
-                            <th class="text-center">AVG</th>
-                            <th class="text-center">OBP</th>
-                            <th class="text-center">SLG</th>
-                            <th class="text-center">OPS</th>
-                            <th class="text-center tooltip-cell" data-tip="Weighted On-Base Average">wOBA</th>
-                            <th class="text-center tooltip-cell" data-tip="Poder Aislado (SLG−AVG)">ISO</th>
+                            ${gTh('PJ', 'PJ')}
+                            ${gTh('AB', 'AB')}
+                            ${gTh('PA', 'PA')}
+                            ${gTh('H', 'H')}
+                            ${gTh('1B', '1B')}
+                            ${gTh('2B', '2B')}
+                            ${gTh('3B', '3B')}
+                            ${gTh('HR', 'HR')}
+                            ${gTh('R', 'R')}
+                            ${gTh('RBI', 'RBI')}
+                            ${gTh('BB', 'BB')}
+                            ${gTh('K', 'K')}
+                            ${gTh('AVG', 'AVG')}
+                            ${gTh('OBP', 'OBP')}
+                            ${gTh('SLG', 'SLG')}
+                            ${gTh('OPS', 'OPS')}
+                            <th class="text-center tooltip-cell adv-col" data-tip="${STAT_GLOSSARY.wOBA.replace(/"/g,'&quot;')}">wOBA<sup class="info-ico">ⓘ</sup></th>
+                            <th class="text-center tooltip-cell adv-col" data-tip="${STAT_GLOSSARY.ISO.replace(/"/g,'&quot;')}">ISO<sup class="info-ico">ⓘ</sup></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -2972,8 +3107,8 @@
                                     <td class="text-center font-mono">${formatAvg(calculateBattingOBP(b))}</td>
                                     <td class="text-center font-mono">${formatAvg(calculateBattingSLG(b))}</td>
                                     <td class="text-center font-mono" style="color:${calculateBattingOPS(b) >= .800 ? 'var(--accent)' : 'var(--text)'}">${calculateBattingOPS(b).toFixed(3)}</td>
-                                    <td class="text-center font-mono" style="color:${woba >= .370 ? 'var(--green)' : woba >= .310 ? 'var(--text)' : 'var(--muted)'}">${formatAvg(woba)}</td>
-                                    <td class="text-center font-mono" style="color:${iso >= .200 ? 'var(--accent)' : iso >= .120 ? 'var(--text)' : 'var(--muted)'}">${formatAvg(iso)}</td>
+                                    <td class="text-center font-mono adv-col" style="color:${woba >= .370 ? 'var(--green)' : woba >= .310 ? 'var(--text)' : 'var(--muted)'}">${formatAvg(woba)}</td>
+                                    <td class="text-center font-mono adv-col" style="color:${iso >= .200 ? 'var(--accent)' : iso >= .120 ? 'var(--text)' : 'var(--muted)'}">${formatAvg(iso)}</td>
                                 </tr>
                             `;
                         }).join('')}
@@ -3301,21 +3436,21 @@
                             <th>#</th>
                             <th>Pitcher</th>
                             <th>Equipo</th>
-                            <th class="text-center">PJ</th>
-                            <th class="text-center">W</th>
-                            <th class="text-center">L</th>
-                            <th class="text-center">S</th>
-                            <th class="text-center">IP</th>
-                            <th class="text-center">H</th>
+                            ${gTh('PJ', 'PJ')}
+                            ${gTh('W', 'W')}
+                            ${gTh('L', 'L')}
+                            ${gTh('S', 'S')}
+                            ${gTh('IP', 'IP')}
+                            ${gTh('H', 'H')}
                             <th class="text-center">R</th>
-                            <th class="text-center">ER</th>
-                            <th class="text-center">BB</th>
-                            <th class="text-center">K</th>
-                            <th class="text-center">HR</th>
-                            <th class="text-center">ERA</th>
-                            <th class="text-center">WHIP</th>
-                            <th class="text-center">K/9</th>
-                            <th class="text-center">BB/9</th>
+                            ${gTh('ER', 'ER')}
+                            ${gTh('BB', 'BB')}
+                            ${gTh('K', 'K')}
+                            ${gTh('HR', 'HR')}
+                            ${gTh('ERA', 'ERA')}
+                            ${gTh('WHIP', 'WHIP')}
+                            <th class="text-center tooltip-cell adv-col" data-tip="${STAT_GLOSSARY['K/9'].replace(/"/g,'&quot;')}">K/9<sup class="info-ico">ⓘ</sup></th>
+                            <th class="text-center tooltip-cell adv-col" data-tip="${STAT_GLOSSARY['BB/9'].replace(/"/g,'&quot;')}">BB/9<sup class="info-ico">ⓘ</sup></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -3342,8 +3477,8 @@
                                     <td class="text-center">${p.hr || 0}</td>
                                     <td class="text-center font-mono" style="color:${era < 4 ? 'var(--green)' : era < 6 ? 'var(--accent)' : 'var(--red)'}">${era.toFixed(2)}</td>
                                     <td class="text-center font-mono">${whip.toFixed(2)}</td>
-                                    <td class="text-center font-mono">${k9.toFixed(1)}</td>
-                                    <td class="text-center font-mono">${bb9.toFixed(1)}</td>
+                                    <td class="text-center font-mono adv-col">${k9.toFixed(1)}</td>
+                                    <td class="text-center font-mono adv-col">${bb9.toFixed(1)}</td>
                                 </tr>
                             `;
                         }).join('')}
@@ -3404,13 +3539,13 @@
                             <th>Jugador</th>
                             <th>Equipo</th>
                             <th>Pos(es)</th>
-                            <th class="text-center">PJ</th>
-                            <th class="text-center">INN</th>
-                            <th class="text-center">PO</th>
-                            <th class="text-center">A</th>
-                            <th class="text-center">E</th>
-                            <th class="text-center">OPP</th>
-                            <th class="text-center">FLD%</th>
+                            ${gTh('PJ', 'PJ')}
+                            ${gTh('INN', 'INN')}
+                            ${gTh('PO', 'PO')}
+                            ${gTh('A', 'A')}
+                            ${gTh('E', 'E')}
+                            <th class="text-center tooltip-cell adv-col" data-tip="${STAT_GLOSSARY.OPP.replace(/"/g,'&quot;')}">OPP<sup class="info-ico">ⓘ</sup></th>
+                            ${gTh('FLD%', 'FLD%')}
                             <th class="text-center" style="font-size:0.55rem;color:var(--muted);">Datos</th>
                         </tr>
                     </thead>
@@ -3436,7 +3571,7 @@
                                     <td class="text-center" style="color:${p.putouts > 0 ? 'var(--green)' : 'var(--muted)'}">${p.putouts}</td>
                                     <td class="text-center" style="color:${p.assists > 0 ? 'var(--blue)' : 'var(--muted)'}">${p.assists}</td>
                                     <td class="text-center" style="color:${p.errors > 0 ? 'var(--red)' : 'var(--text)'}">${p.errors}</td>
-                                    <td class="text-center">${opp}</td>
+                                    <td class="text-center adv-col">${opp}</td>
                                     <td class="text-center font-mono" style="color:${fld >= .950 ? 'var(--green)' : fld >= .900 ? 'var(--accent)' : 'var(--red)'}">${fld.toFixed(3)}</td>
                                     <td class="text-center" style="font-size:0.55rem;color:${statusColor};">${status}</td>
                                 </tr>
@@ -4812,6 +4947,57 @@
                 document.getElementById('compareSelectLabel').textContent = 'Seleccionar pitchers:';
                 populateComparePitcherSelect(aggregateStats(allGames));
                 renderComparePitchingUI();
+            });
+
+            // ===== MODO SIMPLE / AVANZADO =====
+            function applyStatsMode() {
+                document.body.classList.toggle('simple-mode', statsMode === 'simple');
+                // Si estaba viendo la pestaña Avanzado y se cambia a Simple, regresa al Dashboard
+                // (la pestaña Avanzado queda oculta por CSS, pero no debe quedar "activa" sin verse).
+                if (statsMode === 'simple') {
+                    const advTab = document.getElementById('tab-advanced');
+                    if (advTab && advTab.classList.contains('active')) {
+                        const dashBtn = document.querySelector('.tab-btn[data-tab="dashboard"]');
+                        if (dashBtn) dashBtn.click();
+                    }
+                }
+                // Las tablas de Comparar filtran filas según statsMode, así que hay que
+                // re-renderizar si esa pestaña está activa para que el cambio se note al toque.
+                const compareTab = document.getElementById('tab-compare');
+                if (compareTab && compareTab.classList.contains('active')) {
+                    renderCompareUI();
+                }
+            }
+
+            document.getElementById('statsModeSimpleBtn').addEventListener('click', () => {
+                if (statsMode === 'simple') return;
+                statsMode = 'simple';
+                document.getElementById('statsModeSimpleBtn').classList.add('active');
+                document.getElementById('statsModeAdvBtn').classList.remove('active');
+                applyStatsMode();
+            });
+
+            document.getElementById('statsModeAdvBtn').addEventListener('click', () => {
+                if (statsMode === 'avanzado') return;
+                statsMode = 'avanzado';
+                document.getElementById('statsModeAdvBtn').classList.add('active');
+                document.getElementById('statsModeSimpleBtn').classList.remove('active');
+                applyStatsMode();
+            });
+
+            applyStatsMode(); // aplica el estado inicial (Simple por defecto)
+
+            // ===== TOOLTIPS (ⓘ) — soporte táctil para móvil =====
+            // En escritorio funcionan con :hover (CSS). En móvil no hay hover,
+            // así que un toque abre/cierra el tooltip; tocar fuera lo cierra.
+            document.addEventListener('click', (e) => {
+                const cell = e.target.closest('.tooltip-cell');
+                document.querySelectorAll('.tooltip-cell.tooltip-active').forEach(el => {
+                    if (el !== cell) el.classList.remove('tooltip-active');
+                });
+                if (cell) {
+                    cell.classList.toggle('tooltip-active');
+                }
             });
 
             document.addEventListener('dragover', (e) => {
