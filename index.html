@@ -445,32 +445,6 @@
         }
 
         /* ===== COMPARE SECTION ===== */
-        .compare-mode-toggle {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 0.85rem;
-        }
-        .compare-mode-btn {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            color: var(--muted);
-            border-radius: 999px;
-            padding: 0.4rem 1rem;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-        .compare-mode-btn:hover {
-            border-color: var(--accent);
-            color: var(--text);
-        }
-        .compare-mode-btn.active {
-            background: var(--accent);
-            border-color: var(--accent);
-            color: #1a1d2e;
-        }
-
         .compare-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
@@ -781,16 +755,8 @@
         .adv-bad  { color: var(--red); }
         .tooltip-cell {
             position: relative;
-            cursor: help;
         }
-        .info-ico {
-            font-size: 0.65em;
-            opacity: 0.55;
-            margin-left: 2px;
-            font-style: normal;
-        }
-        .tooltip-cell:hover::after,
-        .tooltip-cell.tooltip-active::after {
+        .tooltip-cell:hover::after {
             content: attr(data-tip);
             position: absolute;
             bottom: 120%;
@@ -798,61 +764,13 @@
             transform: translateX(-50%);
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 0.4rem 0.6rem;
-            font-size: 0.65rem;
-            font-weight: 400;
-            white-space: normal;
-            width: max-content;
-            max-width: 200px;
-            text-align: center;
-            line-height: 1.35;
-            z-index: 50;
+            border-radius: 5px;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.6rem;
+            white-space: nowrap;
+            z-index: 10;
             color: var(--text);
             pointer-events: none;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.3);
-        }
-
-        /* ===== MODO SIMPLE / AVANZADO ===== */
-        .stats-mode-bar {
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-            padding: 0.5rem 1rem;
-            background: var(--card);
-            border-bottom: 1px solid var(--border);
-            font-size: 0.75rem;
-            flex-wrap: wrap;
-        }
-        .stats-mode-bar .label {
-            color: var(--muted);
-            font-size: 0.7rem;
-        }
-        .stats-mode-btn {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            color: var(--muted);
-            border-radius: 999px;
-            padding: 0.3rem 0.85rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-        .stats-mode-btn:hover {
-            border-color: var(--accent);
-            color: var(--text);
-        }
-        .stats-mode-btn.active {
-            background: var(--accent);
-            border-color: var(--accent);
-            color: #1a1d2e;
-        }
-        body.simple-mode .adv-col {
-            display: none !important;
-        }
-        body.simple-mode .tab-btn[data-tab="advanced"] {
-            display: none !important;
         }
 
         @media print {
@@ -927,13 +845,6 @@
          /data/manifest.json y los controles de carga manual están ocultos.
          Para reactivar la carga manual (modo administrador/edición), cambia
          READ_ONLY_MODE a false más abajo en el script. -->
-
-    <div class="stats-mode-bar">
-        <span class="label">¿Cómo quieres ver las estadísticas?</span>
-        <button class="stats-mode-btn active" id="statsModeSimpleBtn" data-mode="simple">🙂 Simple</button>
-        <button class="stats-mode-btn" id="statsModeAdvBtn" data-mode="avanzado">🔬 Avanzado</button>
-        <span class="label" style="margin-left:0.3rem;">— en Simple ocultamos las métricas más técnicas. Toca el ⓘ junto a cualquier sigla para ver qué significa.</span>
-    </div>
 
     <!-- STATS GRID -->
     <div class="stats-grid" id="statsGrid">
@@ -1144,12 +1055,8 @@
     <!-- TAB: COMPARAR JUGADORES -->
     <!-- ============================================================ -->
     <div class="tab-content" id="tab-compare">
-        <div class="compare-mode-toggle">
-            <button class="compare-mode-btn active" id="compareModeBatBtn" data-mode="bat">⚾ Bateadores</button>
-            <button class="compare-mode-btn" id="compareModePitchBtn" data-mode="pitch">🥎 Pitchers</button>
-        </div>
         <div class="filters">
-            <label id="compareSelectLabel">Seleccionar jugadores:</label>
+            <label>Seleccionar jugadores:</label>
             <select id="comparePlayerSelect" style="flex:2;min-width:150px;">
                 <option value="">— Seleccionar jugador —</option>
             </select>
@@ -1190,6 +1097,7 @@
         <div id="playersList">
             <div class="empty-state"><p>Carga partidos para ver la lista de jugadores</p></div>
         </div>
+        <div id="playerProfileView" style="display:none;"></div>
     </div>
 
     <!-- ============================================================ -->
@@ -1219,9 +1127,8 @@
         let allGames = [];
         let playersCache = {};
         let comparePlayers = [];
-        let comparePitchers = [];
-        let compareMode = 'bat'; // 'bat' | 'pitch'
-        let statsMode = 'simple'; // 'simple' | 'avanzado' — controla qué tan técnica se ve la app
+        let playerProfileMode = 'ofensiva'; // 'ofensiva' | 'defensiva' — modo actual del perfil de jugador
+        let teamProfileMode = 'ofensiva'; // 'ofensiva' | 'defensiva' — modo actual del perfil de equipo
         let charts = {};
         let teamNameMap = {};
         let awayTeamsSet = new Set(); // tracks all teams that have played as away
@@ -1591,71 +1498,6 @@
         }
 
         // ============================================================
-        //  GLOSARIO — explicaciones en español sencillo para cada sigla
-        // ============================================================
-        // Se usa para los tooltips (ⓘ) en encabezados de tabla y en la
-        // tabla de Comparar. Pensado para alguien que NO sabe de sabermetría:
-        // evita jerga y explica qué significa el número en una frase corta.
-        const STAT_GLOSSARY = {
-            PJ:   'Partidos jugados',
-            AB:   'Turnos al bate (no cuentan boletos ni sacrificios)',
-            PA:   'Apariciones al plato: todos los turnos, incluyendo boletos y sacrificios',
-            H:    'Hits conectados (imparables)',
-            '1B': 'Sencillos (hit de una base)',
-            '2B': 'Dobles (hit de dos bases)',
-            '3B': 'Triples (hit de tres bases)',
-            HR:   'Jonrones',
-            R:    'Carreras anotadas por el jugador',
-            RBI:  'Carreras impulsadas: las que el jugador remolcó con su bateo',
-            BB:   'Bases por bolas (boletos)',
-            K:    'Ponches (veces que se ponchó)',
-            AVG:  'Promedio de bateo: de cada 10 turnos, cuántos hits conecta en promedio',
-            OBP:  'Porcentaje de embasarse: qué tan seguido llega a base (hit, boleto o golpe)',
-            SLG:  'Slugging: mide el poder de bateo, las bases totales que produce por turno',
-            OPS:  'OBP + SLG juntos: una sola cifra para ver qué tan completo es un bateador',
-            wOBA: 'Embase ponderado: parecido a OBP pero valora más los jonrones que los boletos',
-            ISO:  'Poder aislado (SLG menos AVG): mide la potencia pura, sin contar los sencillos',
-            BABIP:'Promedio de bateo solo en pelotas puestas en juego: ayuda a ver si tuvo suerte',
-            'RC/27': 'Carreras que crearía este jugador si bateara una entrada completa de 27 outs él solo',
-            'K%': 'Porcentaje de turnos que terminan en ponche',
-            'BB%': 'Porcentaje de turnos que terminan en base por bolas',
-            'CT%': 'Porcentaje de turnos donde hizo contacto con la bola (no se ponchó)',
-            'XBH%': 'Porcentaje de sus hits que fueron de extrabase (doble, triple o jonrón)',
-            W:    'Juegos ganados como pitcher',
-            L:    'Juegos perdidos como pitcher',
-            S:    'Salvamentos (rescates)',
-            IP:   'Entradas lanzadas',
-            ER:   'Carreras limpias permitidas (sin contar errores defensivos)',
-            ERA:  'Efectividad: promedio de carreras limpias permitidas cada 7 entradas — entre menos, mejor',
-            WHIP: 'Bateadores que le llegan a base (hits + boletos) por cada entrada lanzada — entre menos, mejor',
-            'K/9': 'Ponches que saca cada 9 entradas',
-            'BB/9': 'Boletos que otorga cada 9 entradas',
-            BAA:  'Promedio de bateo que le permite a los bateadores rivales',
-            FIP:  'Efectividad estimada usando solo lo que el pitcher controla: ponches, boletos y jonrones',
-            PO:   'Putouts: outs que el jugador hizo directamente (atrapar un fly, pisar la base, etc.)',
-            A:    'Asistencias: jugadas donde ayudó a sacar a un corredor sin ser él quien hizo el out final',
-            E:    'Errores defensivos cometidos',
-            OPP:  'Total de jugadas defensivas en las que participó (PO + A + E)',
-            'FLD%': 'Porcentaje de jugadas defensivas bien hechas — entre más cerca de 1.000, mejor',
-            INN:  'Entradas jugadas a la defensiva',
-        };
-
-        // Genera un <th> con tooltip (ⓘ) si la sigla está en el glosario; si no, un <th> simple.
-        function gTh(label, key) {
-            const tip = STAT_GLOSSARY[key];
-            if (!tip) return `<th class="text-center">${label}</th>`;
-            return `<th class="text-center tooltip-cell" data-tip="${tip.replace(/"/g, '&quot;')}">${label}<sup class="info-ico">ⓘ</sup></th>`;
-        }
-
-        // Igual que gTh pero envuelve solo el texto (para usar dentro de una celda <td> ya existente,
-        // como la primera columna "Métrica" de las tablas de Comparar).
-        function gSpan(label, key) {
-            const tip = STAT_GLOSSARY[key];
-            if (!tip) return label;
-            return `<span class="tooltip-cell" data-tip="${tip.replace(/"/g, '&quot;')}">${label}<sup class="info-ico">ⓘ</sup></span>`;
-        }
-
-        // ============================================================
         //  MOTOR DE COMPARACIÓN — fortalezas/debilidades relativas
         // ============================================================
         // Todo este bloque compara SIEMPRE entre los jugadores seleccionados
@@ -1665,28 +1507,26 @@
 
         // Filas de la tabla de comparación, agrupadas por sección.
         // higherBetter: true = mayor es mejor, false = menor es mejor, null = solo contexto (sin color)
-        // tipKey: clave en STAT_GLOSSARY para el tooltip de esta fila.
-        // advanced: true = esta fila se oculta en "Modo Simple" (solo se ve en Modo Avanzado).
         const COMPARE_METRICS = [
             // — BATEO —
-            { group: 'bateo', label: 'AVG',           higherBetter: true,  tipKey: 'AVG', value: p => calculateBattingAVG(p),     format: v => formatAvg(v) },
-            { group: 'bateo', label: 'OBP',           higherBetter: true,  tipKey: 'OBP', value: p => calculateBattingOBP(p),     format: v => formatAvg(v) },
-            { group: 'bateo', label: 'SLG',           higherBetter: true,  tipKey: 'SLG', value: p => calculateBattingSLG(p),     format: v => formatAvg(v) },
-            { group: 'bateo', label: 'OPS',           higherBetter: true,  tipKey: 'OPS', value: p => calculateBattingOPS(p),     format: v => v.toFixed(3) },
-            { group: 'bateo', label: 'ISO (poder)',   higherBetter: true,  tipKey: 'ISO', advanced: true, value: p => calculateISO(p),            format: v => formatAvg(v) },
-            { group: 'bateo', label: 'HR',            higherBetter: true,  tipKey: 'HR',  value: p => p.hr || 0,                  format: v => String(v) },
-            { group: 'bateo', label: 'RBI',           higherBetter: true,  tipKey: 'RBI', value: p => p.rbi || 0,                 format: v => String(v) },
-            { group: 'bateo', label: 'Carreras (R)',  higherBetter: true,  tipKey: 'R',   value: p => p.runs || 0,                format: v => String(v) },
-            { group: 'bateo', label: 'Hits',          higherBetter: true,  tipKey: 'H',   value: p => calculateHits(p),           format: v => String(v) },
-            { group: 'bateo', label: 'BB%',           higherBetter: true,  tipKey: 'BB%', advanced: true, value: p => calculateBBPercent(p),      format: v => v.toFixed(1) + '%' },
-            { group: 'bateo', label: 'K%',            higherBetter: false, tipKey: 'K%',  advanced: true, value: p => calculateKPercent_bat(p),   format: v => v.toFixed(1) + '%' },
-            { group: 'bateo', label: 'AB',            higherBetter: null,  tipKey: 'AB',  value: p => p.atBats || 0,              format: v => String(v) },
+            { group: 'bateo', label: 'AVG',           higherBetter: true,  value: p => calculateBattingAVG(p),     format: v => formatAvg(v) },
+            { group: 'bateo', label: 'OBP',           higherBetter: true,  value: p => calculateBattingOBP(p),     format: v => formatAvg(v) },
+            { group: 'bateo', label: 'SLG',           higherBetter: true,  value: p => calculateBattingSLG(p),     format: v => formatAvg(v) },
+            { group: 'bateo', label: 'OPS',           higherBetter: true,  value: p => calculateBattingOPS(p),     format: v => v.toFixed(3) },
+            { group: 'bateo', label: 'ISO (poder)',   higherBetter: true,  value: p => calculateISO(p),            format: v => formatAvg(v) },
+            { group: 'bateo', label: 'HR',            higherBetter: true,  value: p => p.hr || 0,                  format: v => String(v) },
+            { group: 'bateo', label: 'RBI',           higherBetter: true,  value: p => p.rbi || 0,                 format: v => String(v) },
+            { group: 'bateo', label: 'Carreras (R)',  higherBetter: true,  value: p => p.runs || 0,                format: v => String(v) },
+            { group: 'bateo', label: 'Hits',          higherBetter: true,  value: p => calculateHits(p),           format: v => String(v) },
+            { group: 'bateo', label: 'BB%',           higherBetter: true,  value: p => calculateBBPercent(p),      format: v => v.toFixed(1) + '%' },
+            { group: 'bateo', label: 'K%',            higherBetter: false, value: p => calculateKPercent_bat(p),   format: v => v.toFixed(1) + '%' },
+            { group: 'bateo', label: 'AB',            higherBetter: null,  value: p => p.atBats || 0,              format: v => String(v) },
             // — DEFENSA —
-            { group: 'defensa', label: 'PO',          higherBetter: true,  tipKey: 'PO',  value: p => p.putouts || 0,             format: v => String(v) },
-            { group: 'defensa', label: 'A',           higherBetter: true,  tipKey: 'A',   value: p => p.assists || 0,             format: v => String(v) },
-            { group: 'defensa', label: 'Errores (E)', higherBetter: false, tipKey: 'E',   value: p => p.errors || 0,              format: v => String(v) },
-            { group: 'defensa', label: 'FLD%',        higherBetter: true,  tipKey: 'FLD%',value: p => calculateFieldingPercent(p),format: v => formatAvg(v) },
-            { group: 'defensa', label: 'Lances (PO+A+E)', higherBetter: null, tipKey: 'OPP', advanced: true, value: p => calculateOPP(p),         format: v => String(v) },
+            { group: 'defensa', label: 'PO',          higherBetter: true,  value: p => p.putouts || 0,             format: v => String(v) },
+            { group: 'defensa', label: 'A',           higherBetter: true,  value: p => p.assists || 0,             format: v => String(v) },
+            { group: 'defensa', label: 'Errores (E)', higherBetter: false, value: p => p.errors || 0,              format: v => String(v) },
+            { group: 'defensa', label: 'FLD%',        higherBetter: true,  value: p => calculateFieldingPercent(p),format: v => formatAvg(v) },
+            { group: 'defensa', label: 'Lances (PO+A+E)', higherBetter: null, value: p => calculateOPP(p),         format: v => String(v) },
         ];
 
         // Categorías "destacadas" usadas para las etiquetas de Fortalezas/Debilidades
@@ -1750,10 +1590,9 @@
         function renderComparisonTable(players) {
             const colors = ['var(--blue)', 'var(--accent)', 'var(--green)', 'var(--pink)'];
             const groupLabels = { bateo: '⚾ BATEO', defensa: '🧤 DEFENSA' };
-            const metrics = statsMode === 'avanzado' ? COMPARE_METRICS : COMPARE_METRICS.filter(m => !m.advanced);
 
             let lastGroup = null;
-            const rows = metrics.map(metric => {
+            const rows = COMPARE_METRICS.map(metric => {
                 const values = players.map(p => metric.value(p) || 0);
                 const { bestSet, worstSet } = getMetricRanking(values, metric.higherBetter);
 
@@ -1775,7 +1614,7 @@
 
                 return `${groupHeaderHtml}
                         <tr>
-                            <td>${gSpan(metric.label, metric.tipKey)}</td>
+                            <td>${metric.label}</td>
                             ${cellsHtml}
                         </tr>`;
             }).join('');
@@ -1796,112 +1635,6 @@
                     🟢 Mejor del grupo &nbsp;·&nbsp; 🔴 Peor del grupo &nbsp;·&nbsp;
                     La comparación es solo entre estos ${players.length} jugadores, no contra la liga.
                     Con pocos turnos al bate o lances de campo, estas métricas pueden no ser representativas.
-                    Toca el ⓘ de cada fila para ver qué significa.
-                </p>`;
-        }
-
-        // ============================================================
-        //  MOTOR DE COMPARACIÓN — PITCHERS (mismo enfoque que bateadores)
-        // ============================================================
-        // En pitcheo, ERA/WHIP/BB-9/BAA/FIP son "menor es mejor" y K/9, K% son
-        // "mayor es mejor". Las filas de volumen (IP, H, HR, BB, K, récord) son
-        // contexto y no se colorean porque dependen mucho de cuánto pitcheó cada uno.
-
-        const PITCH_COMPARE_METRICS = [
-            { group: 'pitcheo', label: 'ERA',            higherBetter: false, tipKey: 'ERA',  value: p => calculateERA(p, getStandardInnings()), format: v => v.toFixed(2) },
-            { group: 'pitcheo', label: 'WHIP',           higherBetter: false, tipKey: 'WHIP', value: p => calculateWHIP(p),                      format: v => v.toFixed(2) },
-            { group: 'pitcheo', label: 'K/9',            higherBetter: true,  tipKey: 'K/9',  advanced: true, value: p => calculateKPer9(p),                     format: v => v.toFixed(1) },
-            { group: 'pitcheo', label: 'BB/9',           higherBetter: false, tipKey: 'BB/9', advanced: true, value: p => calculateBBPer9(p),                    format: v => v.toFixed(1) },
-            { group: 'pitcheo', label: 'K%',             higherBetter: true,  tipKey: 'K%',   advanced: true, value: p => calculateKPercent(p),                  format: v => v.toFixed(1) + '%' },
-            { group: 'pitcheo', label: 'BAA',            higherBetter: false, tipKey: 'BAA',  advanced: true, value: p => calculateBAA(p),                       format: v => formatAvg(v) },
-            { group: 'pitcheo', label: 'FIP',            higherBetter: false, tipKey: 'FIP',  advanced: true, value: p => calculateFIP(p),                       format: v => v.toFixed(2) },
-            { group: 'pitcheo', label: 'IP',             higherBetter: null,  tipKey: 'IP',   value: p => p.outs || 0,                           format: v => formatInnings(v) },
-            { group: 'pitcheo', label: 'H permitidos',   higherBetter: null,  tipKey: 'H',    value: p => p.hits || 0,                           format: v => String(v) },
-            { group: 'pitcheo', label: 'HR permitidos',  higherBetter: null,  tipKey: 'HR',   value: p => p.hr || 0,                             format: v => String(v) },
-            { group: 'pitcheo', label: 'BB otorgadas',   higherBetter: null,  tipKey: 'BB',   value: p => p.bb || 0,                             format: v => String(v) },
-            { group: 'pitcheo', label: 'K (total)',      higherBetter: null,  tipKey: 'K',    value: p => p.strikeouts || 0,                     format: v => String(v) },
-            { group: 'pitcheo', label: 'Récord (W-L)',   higherBetter: null,                  value: p => `${p.wins || 0}-${p.losses || 0}`,     format: v => v },
-        ];
-
-        // Categorías curadas para las etiquetas de Fortalezas/Debilidades de pitchers
-        const PITCH_STRENGTH_CATEGORIES = [
-            { icon: '⚡', label: 'Dominio (K/9)',     higherBetter: true,  value: p => calculateKPer9(p) },
-            { icon: '🎯', label: 'Control (BB/9)',    higherBetter: false, value: p => calculateBBPer9(p) },
-            { icon: '🛡️', label: 'Efectividad (ERA)', higherBetter: false, value: p => calculateERA(p, getStandardInnings()) },
-            { icon: '🧱', label: 'Solidez (WHIP)',    higherBetter: false, value: p => calculateWHIP(p) },
-        ];
-
-        // Igual que buildPlayerProfiles pero para pitchers — relativo solo al grupo comparado.
-        function buildPitcherProfiles(players) {
-            const profiles = players.map(() => ({ strengths: [], weaknesses: [] }));
-            if (players.length < 2) return profiles;
-
-            PITCH_STRENGTH_CATEGORIES.forEach(cat => {
-                const values = players.map(p => cat.value(p));
-                if (values.every(v => !v)) return; // sin muestra real (0 IP), no opinar
-                const { bestSet, worstSet } = getMetricRanking(values, cat.higherBetter);
-                bestSet.forEach(i => {
-                    if (!worstSet.has(i)) profiles[i].strengths.push(`${cat.icon} ${cat.label}`);
-                });
-                worstSet.forEach(i => {
-                    if (!bestSet.has(i)) profiles[i].weaknesses.push(`${cat.icon} ${cat.label}`);
-                });
-            });
-
-            return profiles;
-        }
-
-        // Tabla coloreada de pitcheo — mismo patrón visual que renderComparisonTable.
-        function renderPitchingComparisonTable(players) {
-            const colors = ['var(--blue)', 'var(--accent)', 'var(--green)', 'var(--pink)'];
-            const groupLabels = { pitcheo: '🥎 PITCHEO' };
-            const metrics = statsMode === 'avanzado' ? PITCH_COMPARE_METRICS : PITCH_COMPARE_METRICS.filter(m => !m.advanced);
-
-            let lastGroup = null;
-            const rows = metrics.map(metric => {
-                const values = players.map(p => metric.value(p) || 0);
-                const { bestSet, worstSet } = getMetricRanking(values, metric.higherBetter);
-
-                let groupHeaderHtml = '';
-                if (metric.group !== lastGroup) {
-                    lastGroup = metric.group;
-                    groupHeaderHtml = `
-                        <tr class="compare-group-row">
-                            <td colspan="${players.length + 1}">${groupLabels[metric.group] || metric.group}</td>
-                        </tr>`;
-                }
-
-                const cellsHtml = values.map((v, i) => {
-                    let cls = '';
-                    if (bestSet.has(i)) cls = 'metric-best';
-                    else if (worstSet.has(i)) cls = 'metric-worst';
-                    return `<td class="text-center font-mono ${cls}">${metric.format(v)}</td>`;
-                }).join('');
-
-                return `${groupHeaderHtml}
-                        <tr>
-                            <td>${gSpan(metric.label, metric.tipKey)}</td>
-                            ${cellsHtml}
-                        </tr>`;
-            }).join('');
-
-            return `
-                <div class="table-wrap">
-                    <table class="compare-metrics-table">
-                        <thead><tr>
-                            <th>Métrica</th>
-                            ${players.map((p, i) => `<th class="text-center" style="color:${colors[i % colors.length]};">${p.name}</th>`).join('')}
-                        </tr></thead>
-                        <tbody>
-                            ${rows}
-                        </tbody>
-                    </table>
-                </div>
-                <p style="font-size:0.65rem;color:var(--muted);margin-top:0.5rem;">
-                    🟢 Mejor del grupo &nbsp;·&nbsp; 🔴 Peor del grupo &nbsp;·&nbsp;
-                    La comparación es solo entre estos ${players.length} pitchers, no contra la liga.
-                    Las filas de volumen (IP, H, HR, BB, K, récord) son contexto y no se colorean porque dependen de cuánto pitcheó cada uno.
-                    Toca el ⓘ de cada fila para ver qué significa.
                 </p>`;
         }
 
@@ -3060,24 +2793,24 @@
                             <th>Jugador</th>
                             <th>Pos</th>
                             <th>Equipo</th>
-                            ${gTh('PJ', 'PJ')}
-                            ${gTh('AB', 'AB')}
-                            ${gTh('PA', 'PA')}
-                            ${gTh('H', 'H')}
-                            ${gTh('1B', '1B')}
-                            ${gTh('2B', '2B')}
-                            ${gTh('3B', '3B')}
-                            ${gTh('HR', 'HR')}
-                            ${gTh('R', 'R')}
-                            ${gTh('RBI', 'RBI')}
-                            ${gTh('BB', 'BB')}
-                            ${gTh('K', 'K')}
-                            ${gTh('AVG', 'AVG')}
-                            ${gTh('OBP', 'OBP')}
-                            ${gTh('SLG', 'SLG')}
-                            ${gTh('OPS', 'OPS')}
-                            <th class="text-center tooltip-cell adv-col" data-tip="${STAT_GLOSSARY.wOBA.replace(/"/g,'&quot;')}">wOBA<sup class="info-ico">ⓘ</sup></th>
-                            <th class="text-center tooltip-cell adv-col" data-tip="${STAT_GLOSSARY.ISO.replace(/"/g,'&quot;')}">ISO<sup class="info-ico">ⓘ</sup></th>
+                            <th class="text-center">PJ</th>
+                            <th class="text-center">AB</th>
+                            <th class="text-center">PA</th>
+                            <th class="text-center">H</th>
+                            <th class="text-center">1B</th>
+                            <th class="text-center">2B</th>
+                            <th class="text-center">3B</th>
+                            <th class="text-center">HR</th>
+                            <th class="text-center">R</th>
+                            <th class="text-center">RBI</th>
+                            <th class="text-center">BB</th>
+                            <th class="text-center">K</th>
+                            <th class="text-center">AVG</th>
+                            <th class="text-center">OBP</th>
+                            <th class="text-center">SLG</th>
+                            <th class="text-center">OPS</th>
+                            <th class="text-center tooltip-cell" data-tip="Weighted On-Base Average">wOBA</th>
+                            <th class="text-center tooltip-cell" data-tip="Poder Aislado (SLG−AVG)">ISO</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -3107,8 +2840,8 @@
                                     <td class="text-center font-mono">${formatAvg(calculateBattingOBP(b))}</td>
                                     <td class="text-center font-mono">${formatAvg(calculateBattingSLG(b))}</td>
                                     <td class="text-center font-mono" style="color:${calculateBattingOPS(b) >= .800 ? 'var(--accent)' : 'var(--text)'}">${calculateBattingOPS(b).toFixed(3)}</td>
-                                    <td class="text-center font-mono adv-col" style="color:${woba >= .370 ? 'var(--green)' : woba >= .310 ? 'var(--text)' : 'var(--muted)'}">${formatAvg(woba)}</td>
-                                    <td class="text-center font-mono adv-col" style="color:${iso >= .200 ? 'var(--accent)' : iso >= .120 ? 'var(--text)' : 'var(--muted)'}">${formatAvg(iso)}</td>
+                                    <td class="text-center font-mono" style="color:${woba >= .370 ? 'var(--green)' : woba >= .310 ? 'var(--text)' : 'var(--muted)'}">${formatAvg(woba)}</td>
+                                    <td class="text-center font-mono" style="color:${iso >= .200 ? 'var(--accent)' : iso >= .120 ? 'var(--text)' : 'var(--muted)'}">${formatAvg(iso)}</td>
                                 </tr>
                             `;
                         }).join('')}
@@ -3436,21 +3169,21 @@
                             <th>#</th>
                             <th>Pitcher</th>
                             <th>Equipo</th>
-                            ${gTh('PJ', 'PJ')}
-                            ${gTh('W', 'W')}
-                            ${gTh('L', 'L')}
-                            ${gTh('S', 'S')}
-                            ${gTh('IP', 'IP')}
-                            ${gTh('H', 'H')}
+                            <th class="text-center">PJ</th>
+                            <th class="text-center">W</th>
+                            <th class="text-center">L</th>
+                            <th class="text-center">S</th>
+                            <th class="text-center">IP</th>
+                            <th class="text-center">H</th>
                             <th class="text-center">R</th>
-                            ${gTh('ER', 'ER')}
-                            ${gTh('BB', 'BB')}
-                            ${gTh('K', 'K')}
-                            ${gTh('HR', 'HR')}
-                            ${gTh('ERA', 'ERA')}
-                            ${gTh('WHIP', 'WHIP')}
-                            <th class="text-center tooltip-cell adv-col" data-tip="${STAT_GLOSSARY['K/9'].replace(/"/g,'&quot;')}">K/9<sup class="info-ico">ⓘ</sup></th>
-                            <th class="text-center tooltip-cell adv-col" data-tip="${STAT_GLOSSARY['BB/9'].replace(/"/g,'&quot;')}">BB/9<sup class="info-ico">ⓘ</sup></th>
+                            <th class="text-center">ER</th>
+                            <th class="text-center">BB</th>
+                            <th class="text-center">K</th>
+                            <th class="text-center">HR</th>
+                            <th class="text-center">ERA</th>
+                            <th class="text-center">WHIP</th>
+                            <th class="text-center">K/9</th>
+                            <th class="text-center">BB/9</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -3477,8 +3210,8 @@
                                     <td class="text-center">${p.hr || 0}</td>
                                     <td class="text-center font-mono" style="color:${era < 4 ? 'var(--green)' : era < 6 ? 'var(--accent)' : 'var(--red)'}">${era.toFixed(2)}</td>
                                     <td class="text-center font-mono">${whip.toFixed(2)}</td>
-                                    <td class="text-center font-mono adv-col">${k9.toFixed(1)}</td>
-                                    <td class="text-center font-mono adv-col">${bb9.toFixed(1)}</td>
+                                    <td class="text-center font-mono">${k9.toFixed(1)}</td>
+                                    <td class="text-center font-mono">${bb9.toFixed(1)}</td>
                                 </tr>
                             `;
                         }).join('')}
@@ -3539,13 +3272,13 @@
                             <th>Jugador</th>
                             <th>Equipo</th>
                             <th>Pos(es)</th>
-                            ${gTh('PJ', 'PJ')}
-                            ${gTh('INN', 'INN')}
-                            ${gTh('PO', 'PO')}
-                            ${gTh('A', 'A')}
-                            ${gTh('E', 'E')}
-                            <th class="text-center tooltip-cell adv-col" data-tip="${STAT_GLOSSARY.OPP.replace(/"/g,'&quot;')}">OPP<sup class="info-ico">ⓘ</sup></th>
-                            ${gTh('FLD%', 'FLD%')}
+                            <th class="text-center">PJ</th>
+                            <th class="text-center">INN</th>
+                            <th class="text-center">PO</th>
+                            <th class="text-center">A</th>
+                            <th class="text-center">E</th>
+                            <th class="text-center">OPP</th>
+                            <th class="text-center">FLD%</th>
                             <th class="text-center" style="font-size:0.55rem;color:var(--muted);">Datos</th>
                         </tr>
                     </thead>
@@ -3571,7 +3304,7 @@
                                     <td class="text-center" style="color:${p.putouts > 0 ? 'var(--green)' : 'var(--muted)'}">${p.putouts}</td>
                                     <td class="text-center" style="color:${p.assists > 0 ? 'var(--blue)' : 'var(--muted)'}">${p.assists}</td>
                                     <td class="text-center" style="color:${p.errors > 0 ? 'var(--red)' : 'var(--text)'}">${p.errors}</td>
-                                    <td class="text-center adv-col">${opp}</td>
+                                    <td class="text-center">${opp}</td>
                                     <td class="text-center font-mono" style="color:${fld >= .950 ? 'var(--green)' : fld >= .900 ? 'var(--accent)' : 'var(--red)'}">${fld.toFixed(3)}</td>
                                     <td class="text-center" style="font-size:0.55rem;color:${statusColor};">${status}</td>
                                 </tr>
@@ -3668,6 +3401,11 @@
                 return;
             }
 
+            if (teamFilter !== 'all' && teams.length === 1) {
+                renderTeamProfileContent(teams[0]);
+                return;
+            }
+
             teams.sort((a, b) => b.wins - a.wins || b.pct - a.pct);
 
             let html = `
@@ -3676,7 +3414,7 @@
                 </div>
                 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem;">
                     ${teams.map(t => `
-                        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1rem 1.2rem;">
+                        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1rem 1.2rem;cursor:pointer;" onclick="selectTeamProfile('${t.team}')">
                             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
                                 <span style="font-size:1.1rem;font-weight:700;">${t.team}</span>
                                 <span class="badge ${t.wins >= t.losses ? 'badge-green' : 'badge-red'}">
@@ -3706,6 +3444,7 @@
                                     <span>INN: ${t.innings}</span>
                                 </div>
                             ` : ''}
+                            <div style="text-align:right;font-size:0.55rem;color:var(--accent);margin-top:0.3rem;">👆 Click para ver perfil completo</div>
                         </div>
                     `).join('')}
                 </div>
@@ -3717,9 +3456,306 @@
             container.innerHTML = html;
         }
 
-        // ============================================================
-        //  RENDER: GAMES LIST - CORREGIDO
-        // ============================================================
+        function selectTeamProfile(team) {
+            const sel = document.getElementById('teamStatsTeamFilter');
+            if (sel) sel.value = team;
+            teamProfileMode = 'ofensiva';
+            renderTeamStats();
+        }
+
+        function toggleTeamProfileMode() {
+            teamProfileMode = teamProfileMode === 'ofensiva' ? 'defensiva' : 'ofensiva';
+            renderTeamStats();
+        }
+
+        function resetTeamProfile() {
+            const sel = document.getElementById('teamStatsTeamFilter');
+            if (sel) sel.value = 'all';
+            renderTeamStats();
+        }
+
+        // Abre el perfil de un jugador desde el perfil de equipo, cambiando a la pestaña Jugadores
+        function openPlayerProfileFromTeam(key) {
+            switchTab('players');
+            showPlayerProfile(key);
+        }
+
+        function renderTeamProfileContent(t) {
+            const container = document.getElementById('teamStatsContent');
+            const aggregated = aggregateStats(allGames);
+            const allTeamStats = processTeamStats(allGames);
+            const defAll = processDefenseStats(allGames);
+            const isOff = teamProfileMode !== 'defensiva';
+
+            // ---- Agregado defensivo del equipo (suma de todos sus jugadores) ----
+            const teamDef = defAll.filter(d => d.team === t.team);
+            const teamPO = teamDef.reduce((s, d) => s + (d.putouts || 0), 0);
+            const teamA  = teamDef.reduce((s, d) => s + (d.assists || 0), 0);
+            const teamE  = teamDef.reduce((s, d) => s + (d.errors || 0), 0);
+            const teamInnDef = teamDef.reduce((s, d) => s + (d.innings || 0), 0);
+            const teamFld = calculateFieldingPercent({ putouts: teamPO, assists: teamA, errors: teamE });
+
+            // ---- Promedios de liga para comparar (todos los equipos) ----
+            const leagueOps = leagueAverage(allTeamStats, x => x.ops, 0);
+            const leagueEra = leagueAverage(allTeamStats, x => x.era, 0);
+            const leagueWhip = leagueAverage(allTeamStats, x => x.whip, 0);
+            const leagueErrRate = leagueAverage(allTeamStats, x => x.innings > 0 ? x.defensiveErrors / x.innings : 0, 0);
+            const leagueHRPerGame = leagueAverage(allTeamStats, x => x.games > 0 ? x.hr / x.games : 0, 0);
+            const teamErrRate = t.innings > 0 ? t.defensiveErrors / t.innings : 0;
+            const teamHRPerGame = t.games > 0 ? t.hr / t.games : 0;
+
+            // FLD% de equipo promediado entre todos los equipos de la liga (para comparar)
+            const teamsFieldingAgg = {};
+            defAll.forEach(d => {
+                if (!teamsFieldingAgg[d.team]) teamsFieldingAgg[d.team] = { po: 0, a: 0, e: 0 };
+                teamsFieldingAgg[d.team].po += d.putouts || 0;
+                teamsFieldingAgg[d.team].a += d.assists || 0;
+                teamsFieldingAgg[d.team].e += d.errors || 0;
+            });
+            const teamFldValues = Object.values(teamsFieldingAgg).map(x => calculateFieldingPercent({ putouts: x.po, assists: x.a, errors: x.e }));
+            const leagueTeamFld = teamFldValues.length ? teamFldValues.reduce((s, v) => s + v, 0) / teamFldValues.length : 0;
+
+            function tag(good) {
+                return good
+                    ? `<span style="color:var(--green);font-weight:700;">Fuerte</span>`
+                    : `<span style="color:var(--accent);font-weight:700;">A mejorar</span>`;
+            }
+
+            const offSkills = [
+                { label: 'Ofensiva (OPS de equipo)', good: t.ops >= leagueOps, mine: t.ops.toFixed(3), league: leagueOps.toFixed(3) },
+                { label: 'Poder (HR por partido)', good: teamHRPerGame >= leagueHRPerGame, mine: teamHRPerGame.toFixed(2), league: leagueHRPerGame.toFixed(2) },
+            ];
+            const defSkills = [
+                { label: 'Pitcheo (ERA de equipo)', good: t.era <= leagueEra, mine: t.era.toFixed(2), league: leagueEra.toFixed(2) },
+                { label: 'Control (WHIP de equipo)', good: t.whip <= leagueWhip, mine: t.whip.toFixed(2), league: leagueWhip.toFixed(2) },
+                { label: 'Confiabilidad (FLD% de equipo)', good: teamFld >= leagueTeamFld, mine: teamFld.toFixed(3), league: leagueTeamFld.toFixed(3) },
+                { label: 'Control de errores (E/inning)', good: teamErrRate <= leagueErrRate, mine: teamErrRate.toFixed(2), league: leagueErrRate.toFixed(2) },
+            ];
+            const skillRows = isOff ? offSkills : defSkills;
+
+            // ---- Juegos del equipo en orden cronológico ----
+            const teamGames = allGames
+                .filter(g => g.awayTeam === t.team || g.homeTeam === t.team)
+                .slice()
+                .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+
+            const runsEvolution = teamGames.map((g, i) => {
+                const isAway = g.awayTeam === t.team;
+                return {
+                    label: g.date || `J${i + 1}`,
+                    runsFor: parseInt(isAway ? g.awayScore : g.homeScore) || 0,
+                    runsAgainst: parseInt(isAway ? g.homeScore : g.awayScore) || 0
+                };
+            });
+
+            const recentGames = teamGames.slice(-5).reverse().map(g => {
+                const isAway = g.awayTeam === t.team;
+                const rival = isAway ? g.homeTeam : g.awayTeam;
+                const runsFor = parseInt(isAway ? g.awayScore : g.homeScore) || 0;
+                const runsAgainst = parseInt(isAway ? g.homeScore : g.awayScore) || 0;
+                const result = runsFor > runsAgainst ? 'G' : (runsFor < runsAgainst ? 'P' : 'E');
+                return { date: g.date || '—', rival, runsFor, runsAgainst, result };
+            });
+
+            // ---- Líderes de bateo del equipo (min 5 AB) ----
+            const teamBatters = Object.values(aggregated.batters)
+                .filter(b => b.team === t.team && (b.atBats || 0) >= 5)
+                .sort((a, b) => calculateBattingOPS(b) - calculateBattingOPS(a))
+                .slice(0, 5);
+
+            // ---- Líderes defensivos del equipo (min 3 innings) ----
+            const teamFielders = teamDef
+                .filter(d => (d.innings || 0) >= 3)
+                .sort((a, b) => calculateFieldingPercent(b) - calculateFieldingPercent(a))
+                .slice(0, 5);
+
+            // ---- Cuerpo de pitcheo del equipo (ordenado por innings lanzados) ----
+            const stdInnings = getStandardInnings();
+            const teamPitchers = Object.values(aggregated.pitchers)
+                .filter(p => p.team === t.team)
+                .sort((a, b) => (b.outs || 0) - (a.outs || 0));
+
+            const chartId = 'teamProfileTrendChart';
+            const toggleBtn = `<button class="btn" onclick="toggleTeamProfileMode()">${isOff ? '🛡️ Ver defensiva' : '🏏 Ver ofensiva'}</button>`;
+
+            const statsRow = isOff
+                ? [['AVG', formatAvg(t.avg)], ['OBP', formatAvg(t.obp)], ['SLG', formatAvg(t.slg)], ['OPS', t.ops.toFixed(3)], ['HR', t.hr || 0], ['Carreras', t.runsFor]]
+                : [['ERA', t.era.toFixed(2)], ['WHIP', t.whip.toFixed(2)], ['FLD%', teamFld.toFixed(3)], ['Errores', teamE], ['Carreras perm.', t.runsAgainst], ['INN def.', teamInnDef]];
+
+            const leadersHtml = isOff ? `
+                <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1rem 1.25rem;">
+                    <h3 style="font-size:0.75rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:0.6rem;">🏆 Líderes de bateo</h3>
+                    ${teamBatters.length ? `
+                        <div style="overflow-x:auto;">
+                        <table style="width:100%;font-size:0.78rem;border-collapse:collapse;">
+                            <tr style="color:var(--muted);text-align:left;"><th style="padding:0.3rem 0.4rem;">Jugador</th><th>AVG</th><th>OPS</th><th>HR</th><th>RBI</th></tr>
+                            ${teamBatters.map(b => `
+                                <tr style="border-top:1px solid var(--border);cursor:pointer;" onclick="openPlayerProfileFromTeam('${getPlayerKey(b.name, b.number, b.team)}')">
+                                    <td style="padding:0.3rem 0.4rem;">${b.name} <span style="color:var(--muted);">#${b.number}</span></td>
+                                    <td>${formatAvg(calculateBattingAVG(b))}</td>
+                                    <td>${calculateBattingOPS(b).toFixed(3)}</td>
+                                    <td>${b.hr || 0}</td>
+                                    <td>${b.rbi || 0}</td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                        </div>
+                        <div style="font-size:0.6rem;color:var(--muted);margin-top:0.4rem;">Mínimo 5 turnos al bat · click en un jugador para ver su perfil</div>
+                    ` : `<div class="empty-state"><p>Sin bateadores calificados (5+ AB)</p></div>`}
+                </div>
+            ` : `
+                <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1rem;">
+                    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1rem 1.25rem;">
+                        <h3 style="font-size:0.75rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:0.6rem;">🧤 Líderes defensivos</h3>
+                        ${teamFielders.length ? `
+                            <div style="overflow-x:auto;">
+                            <table style="width:100%;font-size:0.78rem;border-collapse:collapse;">
+                                <tr style="color:var(--muted);text-align:left;"><th style="padding:0.3rem 0.4rem;">Jugador</th><th>Pos</th><th>INN</th><th style="text-align:right;">FLD%</th></tr>
+                                ${teamFielders.map(d => `
+                                    <tr style="border-top:1px solid var(--border);cursor:pointer;" onclick="openPlayerProfileFromTeam('${getPlayerKey(d.name, d.number, d.team)}')">
+                                        <td style="padding:0.3rem 0.4rem;">${d.name} <span style="color:var(--muted);">#${d.number}</span></td>
+                                        <td style="font-size:0.7rem;color:var(--muted);">${d.positions.length ? d.positions.join(',') : '—'}</td>
+                                        <td>${d.innings}</td>
+                                        <td style="text-align:right;">${calculateFieldingPercent(d).toFixed(3)}</td>
+                                    </tr>
+                                `).join('')}
+                            </table>
+                            </div>
+                            <div style="font-size:0.6rem;color:var(--muted);margin-top:0.4rem;">Mínimo 3 innings · click en un jugador para ver su perfil</div>
+                        ` : `<div class="empty-state"><p>Sin fildeadores calificados (3+ INN)</p></div>`}
+                    </div>
+                    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1rem 1.25rem;">
+                        <h3 style="font-size:0.75rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:0.6rem;">⚾ Cuerpo de pitcheo</h3>
+                        ${teamPitchers.length ? `
+                            <div style="overflow-x:auto;">
+                            <table style="width:100%;font-size:0.78rem;border-collapse:collapse;">
+                                <tr style="color:var(--muted);text-align:left;"><th style="padding:0.3rem 0.4rem;">Jugador</th><th>IP</th><th>ERA</th><th>WHIP</th><th>K</th><th>W-L</th></tr>
+                                ${teamPitchers.map(p => `
+                                    <tr style="border-top:1px solid var(--border);cursor:pointer;" onclick="openPlayerProfileFromTeam('${getPlayerKey(p.name, p.number, p.team)}')">
+                                        <td style="padding:0.3rem 0.4rem;">${p.name} <span style="color:var(--muted);">#${p.number}</span></td>
+                                        <td>${formatInnings(p.outs || 0)}</td>
+                                        <td>${calculateERA(p, stdInnings).toFixed(2)}</td>
+                                        <td>${calculateWHIP(p).toFixed(2)}</td>
+                                        <td>${p.strikeouts || 0}</td>
+                                        <td>${p.wins || 0}-${p.losses || 0}</td>
+                                    </tr>
+                                `).join('')}
+                            </table>
+                            </div>
+                            <div style="font-size:0.6rem;color:var(--muted);margin-top:0.4rem;">click en un jugador para ver su perfil</div>
+                        ` : `<div class="empty-state"><p>Sin pitchers registrados</p></div>`}
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = `
+                <button class="btn" onclick="resetTeamProfile()" style="margin-bottom:0.75rem;">← Ver todos los equipos</button>
+
+                <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1rem 1.25rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem;">
+                    <div>
+                        <div style="font-weight:900;font-size:1.2rem;">${t.team}</div>
+                        <div style="font-size:0.75rem;color:var(--muted);">${t.games} partidos jugados</div>
+                    </div>
+                    <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
+                        <span class="badge ${t.wins >= t.losses ? 'badge-green' : 'badge-red'}" style="font-size:0.85rem;">${t.wins}W - ${t.losses}L - ${t.ties}T</span>
+                        <span style="font-size:0.8rem;color:var(--muted);">PCT ${(t.pct * 100).toFixed(1)}%</span>
+                        <span style="font-size:0.8rem;font-weight:700;color:${t.diff >= 0 ? 'var(--green)' : 'var(--red)'};">Diff ${t.diff >= 0 ? '+' : ''}${t.diff}</span>
+                        ${toggleBtn}
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:0.6rem;margin-bottom:1rem;">
+                    ${statsRow.map(([label, val]) => `
+                        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:0.6rem;text-align:center;">
+                            <div style="font-size:0.6rem;color:var(--muted);">${label}</div>
+                            <div style="font-size:1.05rem;font-weight:900;">${val}</div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div style="display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:1rem;margin-bottom:1rem;">
+                    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1rem 1.25rem;">
+                        <h3 style="font-size:0.75rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:0.6rem;">📈 Carreras a favor vs en contra</h3>
+                        ${runsEvolution.length > 1
+                            ? `<canvas id="${chartId}" height="140"></canvas>`
+                            : `<div class="empty-state"><p>Se necesitan al menos 2 partidos para mostrar la tendencia</p></div>`}
+                    </div>
+                    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1rem 1.25rem;">
+                        <h3 style="font-size:0.75rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:0.6rem;">💡 Fortalezas y áreas de mejora ${isOff ? '(ofensiva)' : '(defensiva)'}</h3>
+                        ${skillRows.map(s => `
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:0.4rem 0;border-bottom:1px solid var(--border);font-size:0.8rem;">
+                                <span>${s.label}</span>
+                                <span style="text-align:right;">${tag(s.good)}<br><span style="font-size:0.6rem;color:var(--muted);">equipo ${s.mine} · liga ${s.league}</span></span>
+                            </div>
+                        `).join('')}
+                        <div style="font-size:0.6rem;color:var(--muted);margin-top:0.5rem;">Comparado contra el promedio de todos los equipos de la liga</div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom:1rem;">
+                    ${leadersHtml}
+                </div>
+
+                <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1rem 1.25rem;">
+                    <h3 style="font-size:0.75rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:0.6rem;">📋 Últimos partidos</h3>
+                    ${recentGames.length ? `
+                        <div style="overflow-x:auto;">
+                        <table style="width:100%;font-size:0.8rem;border-collapse:collapse;">
+                            <tr style="color:var(--muted);text-align:left;"><th style="padding:0.3rem 0.5rem;">Fecha</th><th>Rival</th><th>Marcador</th><th style="text-align:right;">Resultado</th></tr>
+                            ${recentGames.map(g => `
+                                <tr style="border-top:1px solid var(--border);">
+                                    <td style="padding:0.3rem 0.5rem;">${g.date}</td>
+                                    <td>${g.rival}</td>
+                                    <td>${g.runsFor} - ${g.runsAgainst}</td>
+                                    <td style="text-align:right;">
+                                        <span class="badge ${g.result === 'G' ? 'badge-green' : g.result === 'P' ? 'badge-red' : 'badge-gold'}">
+                                            ${g.result === 'G' ? '🏆 Ganado' : g.result === 'P' ? 'Perdido' : 'Empate'}
+                                        </span>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                        </div>
+                    ` : `<div class="empty-state"><p>Sin partidos registrados</p></div>`}
+                </div>
+            `;
+
+            if (runsEvolution.length > 1) {
+                setTimeout(() => renderTeamTrendChart(chartId, runsEvolution), 50);
+            }
+        }
+
+        function renderTeamTrendChart(chartId, evolution) {
+            const canvas = document.getElementById(chartId);
+            if (!canvas) return;
+            if (charts.teamProfileTrend) {
+                charts.teamProfileTrend.destroy();
+                charts.teamProfileTrend = null;
+            }
+            const isDark = document.body.classList.contains('dark-theme') ||
+                getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() === '#0d0f14';
+            const textColor = isDark ? '#e8eaf2' : '#1a1d2e';
+            const gridColor = isDark ? '#2a2e3f' : '#d1d5e8';
+
+            charts.teamProfileTrend = new Chart(canvas.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: evolution.map(e => e.label),
+                    datasets: [
+                        { label: 'A favor', data: evolution.map(e => e.runsFor), borderColor: '#22c55e', borderWidth: 2, pointRadius: 2, fill: false, tension: 0.25 },
+                        { label: 'En contra', data: evolution.map(e => e.runsAgainst), borderColor: '#ef4444', borderWidth: 2, pointRadius: 2, fill: false, tension: 0.25 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: true, labels: { color: textColor } } },
+                    scales: {
+                        y: { ticks: { color: textColor }, grid: { color: gridColor } },
+                        x: { ticks: { color: textColor }, grid: { display: false } }
+                    }
+                }
+            });
+        }
 
         function renderGamesList(games, filters = {}) {
             const container = document.getElementById('gamesList');
@@ -3839,7 +3875,7 @@
                 </div>
                 <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:0.75rem;">
                     ${players.map(p => `
-                        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:0.75rem 1rem;display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="addToCompare('${p.name}', '${p.number}', '${p.team}')">
+                        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:0.75rem 1rem;display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="showPlayerProfile('${getPlayerKey(p.name, p.number, p.team)}')">
                             <div>
                                 <div style="font-weight:700;">${p.name}</div>
                                 <div style="font-size:0.65rem;color:var(--muted);">
@@ -3849,7 +3885,7 @@
                             </div>
                             <div style="text-align:right;font-size:0.65rem;color:var(--muted);">
                                 ${p.games} partido${p.games !== 1 ? 's' : ''}
-                                <br><span style="font-size:0.55rem;color:var(--accent);">👆 Click para comparar</span>
+                                <br><span style="font-size:0.55rem;color:var(--accent);">👆 Click para ver perfil</span>
                             </div>
                         </div>
                     `).join('')}
@@ -3857,6 +3893,600 @@
             `;
 
             container.innerHTML = html;
+        }
+
+        // ============================================================
+        //  PERFIL INDIVIDUAL DE JUGADOR
+        // ============================================================
+
+        function showPlayerProfile(key) {
+            const filtersBar = document.querySelector('#tab-players .filters');
+            const list = document.getElementById('playersList');
+            const profile = document.getElementById('playerProfileView');
+            if (filtersBar) filtersBar.style.display = 'none';
+            list.style.display = 'none';
+            profile.style.display = 'block';
+            playerProfileMode = 'ofensiva';
+            renderPlayerProfile(key);
+        }
+
+        function hidePlayerProfile() {
+            const filtersBar = document.querySelector('#tab-players .filters');
+            const list = document.getElementById('playersList');
+            const profile = document.getElementById('playerProfileView');
+            if (filtersBar) filtersBar.style.display = '';
+            list.style.display = '';
+            profile.style.display = 'none';
+            profile.innerHTML = '';
+        }
+
+        function profileAddToCompare(key) {
+            const aggregated = aggregateStats(allGames);
+            const batter = aggregated.batters[key];
+            if (!batter) return;
+            addToCompare(batter.name, batter.number, batter.team);
+            hidePlayerProfile();
+            switchTab('compare');
+        }
+
+        function togglePlayerProfileMode(key) {
+            playerProfileMode = playerProfileMode === 'ofensiva' ? 'defensiva' : 'ofensiva';
+            renderPlayerProfile(key);
+        }
+
+        function renderPlayerProfile(key) {
+            if (playerProfileMode === 'defensiva') {
+                renderDefensivePlayerProfile(key);
+            } else {
+                renderOffensivePlayerProfile(key);
+            }
+        }
+
+        // Construye el header compartido (nombre, equipo, posiciones, botones) para ambos modos de perfil
+        function profileHeaderHtml(key, name, number, team, positions, extraButtons) {
+            return `
+                <button class="btn" onclick="hidePlayerProfile()" style="margin-bottom:0.75rem;">← Volver a jugadores</button>
+                <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1rem 1.25rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem;">
+                    <div>
+                        <div style="font-weight:900;font-size:1.1rem;">${name} <span style="color:var(--muted);font-weight:400;">#${number}</span></div>
+                        <div style="font-size:0.75rem;color:var(--muted);">${team}${positions && positions.length ? ' · ' + positions.join(', ') : ''}</div>
+                    </div>
+                    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">${extraButtons}</div>
+                </div>
+            `;
+        }
+
+        // Calcula el promedio de liga para una métrica derivada, usado como base
+        // de comparación en "Fortalezas y áreas de mejora" (bateo)
+        function leagueAverage(batters, fn, minAB = 5) {
+            const qualified = batters.filter(b => (b.atBats || 0) >= minAB);
+            if (!qualified.length) return 0;
+            const sum = qualified.reduce((s, b) => s + fn(b), 0);
+            return sum / qualified.length;
+        }
+
+        // Igual que leagueAverage pero para estadísticas defensivas (filtra por innings jugados)
+        function leagueAverageDef(defList, fn, minInnings = 3) {
+            const qualified = defList.filter(d => (d.innings || 0) >= minInnings);
+            if (!qualified.length) return 0;
+            const sum = qualified.reduce((s, d) => s + fn(d), 0);
+            return sum / qualified.length;
+        }
+
+        function renderOffensivePlayerProfile(key) {
+            const container = document.getElementById('playerProfileView');
+            const aggregated = aggregateStats(allGames);
+            const batter = aggregated.batters[key];
+            const playerMeta = aggregated.players[key];
+
+            if (!batter) {
+                const name = playerMeta ? playerMeta.name : '—';
+                const number = playerMeta ? playerMeta.number : '';
+                const team = playerMeta ? playerMeta.team : '';
+                const toggleBtn = `<button class="btn" onclick="togglePlayerProfileMode('${key}')">🛡️ Ver defensiva</button>`;
+                container.innerHTML = profileHeaderHtml(key, name, number, team, playerMeta?.positions, toggleBtn) +
+                    `<div class="empty-state"><p>No se encontraron datos de bateo para este jugador</p></div>`;
+                return;
+            }
+
+            const allBatters = Object.values(aggregated.batters);
+            const hits = calculateHits(batter);
+            const avg  = calculateBattingAVG(batter);
+            const obp  = calculateBattingOBP(batter);
+            const slg  = calculateBattingSLG(batter);
+            const ops  = calculateBattingOPS(batter);
+            const iso  = calculateISO(batter);
+            const kPct = calculateKPercent_bat(batter);
+            const bbPct = calculateBBPercent(batter);
+
+            // ---- Rankings de liga (entre jugadores con al menos 5 AB) ----
+            function rankOf(fn, higherIsBetter = true) {
+                const qualified = allBatters.filter(b => (b.atBats || 0) >= 5);
+                if (!qualified.some(b => getPlayerKey(b.name, b.number, b.team) === key)) return null;
+                const sorted = qualified
+                    .map(b => ({ key: getPlayerKey(b.name, b.number, b.team), val: fn(b) }))
+                    .sort((a, b) => higherIsBetter ? b.val - a.val : a.val - b.val);
+                const idx = sorted.findIndex(s => s.key === key);
+                return idx === -1 ? null : { rank: idx + 1, total: sorted.length };
+            }
+
+            const rankings = [
+                { label: 'AVG', r: rankOf(calculateBattingAVG) },
+                { label: 'OBP', r: rankOf(calculateBattingOBP) },
+                { label: 'SLG', r: rankOf(calculateBattingSLG) },
+                { label: 'OPS', r: rankOf(calculateBattingOPS) },
+                { label: 'HR',  r: rankOf(b => b.hr || 0) },
+                { label: 'RBI', r: rankOf(b => b.rbi || 0) },
+            ];
+
+            // ---- Evolución de AVG partido a partido ----
+            const gamesPlayed = allGames
+                .filter(g => batter.gameIds.has(g.id))
+                .slice()
+                .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+
+            let cumAB = 0, cumH = 0;
+            const evolution = gamesPlayed.map((g, i) => {
+                const gb = Object.values(g.batters || {}).find(b => getPlayerKey(b.name, b.number, b.team) === key);
+                if (gb) {
+                    cumAB += gb.atBats || 0;
+                    cumH  += calculateHits(gb);
+                }
+                return { label: g.date || `J${i + 1}`, avg: cumAB > 0 ? cumH / cumAB : 0 };
+            });
+
+            // ---- Últimos 5 juegos ----
+            const recentGames = gamesPlayed.slice(-5).reverse().map(g => {
+                const gb = Object.values(g.batters || {}).find(b => getPlayerKey(b.name, b.number, b.team) === key);
+                const rival = g.awayTeam === batter.team ? g.homeTeam : g.awayTeam;
+                const gHits = gb ? calculateHits(gb) : 0;
+                const gAB = gb ? (gb.atBats || 0) : 0;
+                return {
+                    date: g.date || '—',
+                    rival,
+                    hab: `${gHits}/${gAB}`,
+                    hr: gb ? (gb.hr || 0) : 0,
+                    rbi: gb ? (gb.rbi || 0) : 0,
+                    avg: gAB > 0 ? formatAvg(gHits / gAB) : '.000'
+                };
+            });
+
+            // ---- Zonas de bateo (mapa de calor, reutiliza los mismos datos del spray chart) ----
+            const zoneCoords = {
+                p:   { x: 250, y: 235, label: 'P' },  c:  { x: 250, y: 430, label: 'C' },
+                '1b':{ x: 370, y: 270, label: '1B' }, '2b':{ x: 300, y: 190, label: '2B' },
+                '3b':{ x: 130, y: 270, label: '3B' }, ss: { x: 190, y: 200, label: 'SS' },
+                lf:  { x: 100, y: 120, label: 'LF' }, cf: { x: 250, y:  80, label: 'CF' },
+                rf:  { x: 400, y: 120, label: 'RF' }, sf: { x: 250, y: 350, label: 'SF' },
+            };
+            const zoneCounts = getPlayerHitZones(batter.name, batter.number, batter.team, gamesPlayed);
+            const zoneTotals = {};
+            Object.entries(zoneCounts).forEach(([zk, count]) => {
+                const [zone] = zk.split('|');
+                zoneTotals[zone] = (zoneTotals[zone] || 0) + count;
+            });
+            const maxZone = Math.max(1, ...Object.values(zoneTotals));
+            const heatDots = Object.entries(zoneTotals).map(([zone, count]) => {
+                const coord = zoneCoords[zone];
+                if (!coord) return '';
+                const intensity = count / maxZone;
+                const r = 18 + intensity * 26;
+                return `<circle cx="${coord.x}" cy="${coord.y}" r="${r}" fill="var(--red)" fill-opacity="${0.2 + intensity * 0.55}">
+                    <title>${coord.label}: ${count} hit${count !== 1 ? 's' : ''}</title>
+                </circle>
+                <text x="${coord.x}" y="${coord.y + 4}" text-anchor="middle" font-size="11" font-weight="700" fill="var(--text, #fff)" pointer-events="none">${count}</text>`;
+            }).join('');
+            const hasZoneData = Object.keys(zoneTotals).length > 0;
+
+            // ---- Fortalezas / áreas de mejora (basado en promedio de liga, no un rating inventado) ----
+            const leagueISO = leagueAverage(allBatters, calculateISO);
+            const leagueK   = leagueAverage(allBatters, calculateKPercent_bat);
+            const leagueBB  = leagueAverage(allBatters, calculateBBPercent);
+
+            function tag(good) {
+                return good
+                    ? `<span style="color:var(--green);font-weight:700;">Fuerte</span>`
+                    : `<span style="color:var(--accent);font-weight:700;">A mejorar</span>`;
+            }
+
+            const skillRows = [
+                { label: 'Poder (ISO)', desc: 'Qué tanto extrabase produces (dobles, triples, jonrones), sin contar los sencillos', good: iso >= leagueISO, mine: formatAvg(iso), league: formatAvg(leagueISO) },
+                { label: 'Ponches (K%)', desc: 'Porcentaje de ponches por turno al plato · menos es mejor', good: kPct <= leagueK, mine: kPct.toFixed(1) + '%', league: leagueK.toFixed(1) + '%' },
+                { label: 'Disciplina (BB%)', desc: 'Porcentaje de bases por bolas por turno al plato · más es mejor', good: bbPct >= leagueBB, mine: bbPct.toFixed(1) + '%', league: leagueBB.toFixed(1) + '%' },
+            ];
+
+            // ---- Chart canvas id único para no chocar con otros charts ----
+            const chartId = 'profileAvgChart';
+            const compareBtn = `<button class="btn btn-success" onclick="profileAddToCompare('${key}')">➕ Comparar</button>`;
+            const toggleBtn = `<button class="btn" onclick="togglePlayerProfileMode('${key}')">🛡️ Ver defensiva</button>`;
+
+            container.innerHTML = profileHeaderHtml(key, batter.name, batter.number, batter.team, playerMeta?.positions, compareBtn + toggleBtn) + `
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(70px,1fr));gap:0.5rem;margin-bottom:0.75rem;">
+                    ${[
+                        ['AVG', formatAvg(avg)], ['OBP', formatAvg(obp)], ['SLG', formatAvg(slg)],
+                        ['OPS', formatAvg(ops)], ['HR', batter.hr || 0], ['RBI', batter.rbi || 0]
+                    ].map(([label, val]) => `
+                        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:0.45rem;text-align:center;">
+                            <div style="font-size:0.55rem;color:var(--muted);">${label}</div>
+                            <div style="font-size:0.95rem;font-weight:900;">${val}</div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:0.75rem 1rem;margin-bottom:1rem;">
+                    <h3 style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:0.5rem;">📋 Resumen de temporada</h3>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(85px,1fr));gap:0.4rem;">
+                        ${[
+                            ['👤', 'Partidos', batter.games],
+                            ['🔄', 'Turnos', batter.pa || 0],
+                            ['🎯', 'Hits', hits],
+                            ['📊', 'Promedio', formatAvg(avg)],
+                            ['🏗️', 'Total bases', calculateTotalBases(batter)],
+                            ['💥', 'Extrabases', calculateXBH(batter)],
+                            ['❌', 'Ponches', batter.strikeouts || 0],
+                            ['🚶', 'Bases por bolas', batter.bb || 0]
+                        ].map(([icon, label, val]) => `
+                            <div style="text-align:center;padding:0.25rem;">
+                                <div style="font-size:0.95rem;">${icon}</div>
+                                <div style="font-size:0.5rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;">${label}</div>
+                                <div style="font-size:0.9rem;font-weight:800;">${val}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:1rem;margin-bottom:1rem;">
+                    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1rem 1.25rem;">
+                        <h3 style="font-size:0.75rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:0.6rem;">📈 Evolución de AVG</h3>
+                        ${evolution.length > 1
+                            ? `<canvas id="${chartId}" height="140"></canvas>`
+                            : `<div class="empty-state"><p>Se necesitan al menos 2 partidos para mostrar la evolución</p></div>`}
+                    </div>
+                    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1rem 1.25rem;">
+                        <h3 style="font-size:0.75rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:0.6rem;">🏆 Rankings de liga</h3>
+                        ${rankings.map(r => `
+                            <div style="display:flex;justify-content:space-between;padding:0.25rem 0;border-bottom:1px solid var(--border);font-size:0.8rem;">
+                                <span style="color:var(--muted);">${r.label}</span>
+                                <span style="font-weight:700;">${r.r ? `#${r.r.rank} de ${r.r.total}` : '—'}</span>
+                            </div>
+                        `).join('')}
+                        <div style="font-size:0.6rem;color:var(--muted);margin-top:0.5rem;">Entre jugadores con 5+ turnos al bat</div>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:1rem;margin-bottom:1rem;">
+                    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1rem 1.25rem;">
+                        <h3 style="font-size:0.75rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:0.6rem;">🔥 Zonas de bateo</h3>
+                        ${hasZoneData ? `
+                            <svg viewBox="0 0 500 480" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;">
+                                <path d="M 60,440 Q 250,-30 440,440 Z" fill="var(--surface)" stroke="var(--border2)" stroke-width="2"/>
+                                <polygon points="250,380 370,270 250,160 130,270" fill="var(--card)" stroke="var(--border2)" stroke-width="1.5"/>
+                                ${heatDots}
+                            </svg>
+                        ` : `<div class="empty-state"><p>No hay hits con zona registrada para este jugador</p></div>`}
+                    </div>
+                    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1rem 1.25rem;">
+                        <h3 style="font-size:0.75rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:0.6rem;">💡 Fortalezas y áreas de mejora</h3>
+                        ${skillRows.map(s => `
+                            <div style="padding:0.4rem 0;border-bottom:1px solid var(--border);font-size:0.8rem;">
+                                <div style="display:flex;justify-content:space-between;align-items:center;">
+                                    <span style="font-weight:700;">${s.label}</span>
+                                    <span style="text-align:right;">${tag(s.good)}<br><span style="font-size:0.6rem;color:var(--muted);">tuyo ${s.mine} · liga ${s.league}</span></span>
+                                </div>
+                                <div style="font-size:0.65rem;color:var(--muted);margin-top:0.15rem;">${s.desc}</div>
+                            </div>
+                        `).join('')}
+                        <div style="font-size:0.6rem;color:var(--muted);margin-top:0.5rem;">Se compara contra el promedio de toda la liga, tomando en cuenta solo jugadores con 5+ turnos al bat (para no distorsionar el promedio con muestras muy pequeñas)</div>
+                    </div>
+                </div>
+
+                <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1rem 1.25rem;">
+                    <h3 style="font-size:0.75rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:0.6rem;">📋 Últimos partidos</h3>
+                    ${recentGames.length ? `
+                        <div style="overflow-x:auto;">
+                        <table style="width:100%;font-size:0.8rem;border-collapse:collapse;">
+                            <tr style="color:var(--muted);text-align:left;">
+                                <th style="padding:0.3rem 0.5rem;">Fecha</th><th>Rival</th><th>H/AB</th><th>HR</th><th>RBI</th><th style="text-align:right;">AVG</th>
+                            </tr>
+                            ${recentGames.map(g => `
+                                <tr style="border-top:1px solid var(--border);">
+                                    <td style="padding:0.3rem 0.5rem;">${g.date}</td>
+                                    <td>${g.rival}</td><td>${g.hab}</td><td>${g.hr}</td><td>${g.rbi}</td>
+                                    <td style="text-align:right;">${g.avg}</td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                        </div>
+                    ` : `<div class="empty-state"><p>Sin partidos registrados</p></div>`}
+                </div>
+            `;
+
+            if (evolution.length > 1) {
+                setTimeout(() => renderProfileAvgChart(chartId, evolution), 50);
+            }
+        }
+
+        function renderProfileAvgChart(chartId, evolution) {
+            const canvas = document.getElementById(chartId);
+            if (!canvas) return;
+            if (charts.profileAvg) {
+                charts.profileAvg.destroy();
+                charts.profileAvg = null;
+            }
+            const isDark = document.body.classList.contains('dark-theme') ||
+                getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() === '#0d0f14';
+            const textColor = isDark ? '#e8eaf2' : '#1a1d2e';
+            const gridColor = isDark ? '#2a2e3f' : '#d1d5e8';
+
+            charts.profileAvg = new Chart(canvas.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: evolution.map(e => e.label),
+                    datasets: [{
+                        data: evolution.map(e => e.avg),
+                        borderColor: '#3b82f6',
+                        borderWidth: 2, pointRadius: 2, fill: false, tension: 0.25
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { ticks: { color: textColor, callback: v => v.toFixed(3) }, grid: { color: gridColor } },
+                        x: { ticks: { color: textColor }, grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // ============================================================
+        //  PERFIL DEFENSIVO DE JUGADOR
+        // ============================================================
+
+        function renderDefensivePlayerProfile(key) {
+            const container = document.getElementById('playerProfileView');
+            const aggregated = aggregateStats(allGames);
+            const playerMeta = aggregated.players[key];
+            const defAll = processDefenseStats(allGames);
+            const defStat = defAll.find(d => getPlayerKey(d.name, d.number, d.team) === key);
+
+            const toggleBtn = `<button class="btn" onclick="togglePlayerProfileMode('${key}')">🏏 Ver ofensiva</button>`;
+            const compareBtn = `<button class="btn btn-success" onclick="profileAddToCompare('${key}')">➕ Comparar</button>`;
+
+            if (!defStat) {
+                const name = playerMeta ? playerMeta.name : '—';
+                const number = playerMeta ? playerMeta.number : '';
+                const team = playerMeta ? playerMeta.team : '';
+                container.innerHTML = profileHeaderHtml(key, name, number, team, playerMeta?.positions, compareBtn + toggleBtn) +
+                    `<div class="empty-state"><p>No hay datos defensivos registrados para este jugador</p></div>`;
+                return;
+            }
+
+            const MIN_INN = 3; // mínimo de innings jugados en el campo para calificar en rankings/comparación de liga
+
+            const opp = calculateOPP(defStat);
+            const fld = calculateFieldingPercent(defStat);
+            const rangePerInning = defStat.innings > 0 ? (defStat.putouts + defStat.assists) / defStat.innings : 0;
+            const errRate = defStat.innings > 0 ? defStat.errors / defStat.innings : 0;
+
+            // ---- Rankings de liga (entre jugadores con 3+ innings defensivos) ----
+            function rankOfDef(fn, higherIsBetter = true) {
+                const qualified = defAll.filter(d => (d.innings || 0) >= MIN_INN);
+                if (!qualified.some(d => getPlayerKey(d.name, d.number, d.team) === key)) return null;
+                const sorted = qualified
+                    .map(d => ({ key: getPlayerKey(d.name, d.number, d.team), val: fn(d) }))
+                    .sort((a, b) => higherIsBetter ? b.val - a.val : a.val - b.val);
+                const idx = sorted.findIndex(s => s.key === key);
+                return idx === -1 ? null : { rank: idx + 1, total: sorted.length };
+            }
+
+            const defRankings = [
+                { label: 'FLD%', r: rankOfDef(calculateFieldingPercent) },
+                { label: 'Putouts (PO)', r: rankOfDef(d => d.putouts || 0) },
+                { label: 'Asistencias (A)', r: rankOfDef(d => d.assists || 0) },
+                { label: 'Errores (E)', r: rankOfDef(d => d.errors || 0, false) },
+            ];
+
+            // ---- Juegos en los que este jugador tuvo participación defensiva ----
+            const gameIdSet = new Set(defStat.gameIds);
+            const gamesPlayedDef = allGames
+                .filter(g => gameIdSet.has(g.id))
+                .slice()
+                .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+
+            // ---- Evolución de FLD% acumulado partido a partido ----
+            let cumPO = 0, cumA = 0, cumE = 0;
+            const defEvolution = gamesPlayedDef.map((g, i) => {
+                const gd = processDefenseStats([g]).find(d => getPlayerKey(d.name, d.number, d.team) === key);
+                if (gd) { cumPO += gd.putouts || 0; cumA += gd.assists || 0; cumE += gd.errors || 0; }
+                const chances = cumPO + cumA + cumE;
+                return { label: g.date || `J${i + 1}`, fld: chances > 0 ? (cumPO + cumA) / chances : 1 };
+            });
+
+            // ---- Últimos 5 partidos (defensivo) ----
+            const recentDefGames = gamesPlayedDef.slice(-5).reverse().map(g => {
+                const gd = processDefenseStats([g]).find(d => getPlayerKey(d.name, d.number, d.team) === key);
+                const rival = g.awayTeam === defStat.team ? g.homeTeam : g.awayTeam;
+                const po = gd ? (gd.putouts || 0) : 0;
+                const a  = gd ? (gd.assists || 0) : 0;
+                const e  = gd ? (gd.errors || 0) : 0;
+                const chances = po + a + e;
+                const pos = gd && gd.positions.length ? gd.positions.join(', ') : (defStat.positions.length ? defStat.positions.join(', ') : '—');
+                return { date: g.date || '—', rival, pos, po, a, e, fld: chances > 0 ? ((po + a) / chances).toFixed(3) : '—' };
+            });
+
+            // ---- Distribución de innings por posición jugada (reemplaza el mapa de calor en modo defensivo) ----
+            const posInnings = {};
+            gamesPlayedDef.forEach(g => {
+                const gd = processDefenseStats([g]).find(d => getPlayerKey(d.name, d.number, d.team) === key);
+                if (!gd || !gd.innings) return;
+                const pos = gd.positions.length ? gd.positions[0] : '—';
+                posInnings[pos] = (posInnings[pos] || 0) + gd.innings;
+            });
+            const totalPosInnings = Object.values(posInnings).reduce((s, v) => s + v, 0) || 1;
+            const posRows = Object.entries(posInnings).sort((a, b) => b[1] - a[1]);
+            const mainPosition = posRows.length ? posRows[0][0] : (defStat.positions[0] || '—');
+
+            // ---- Fortalezas / áreas de mejora defensivas (vs promedio de liga) ----
+            const leagueFld   = leagueAverageDef(defAll, calculateFieldingPercent, MIN_INN);
+            const leagueRange = leagueAverageDef(defAll, d => d.innings > 0 ? (d.putouts + d.assists) / d.innings : 0, MIN_INN);
+            const leagueErr   = leagueAverageDef(defAll, d => d.innings > 0 ? d.errors / d.innings : 0, MIN_INN);
+
+            function tag(good) {
+                return good
+                    ? `<span style="color:var(--green);font-weight:700;">Fuerte</span>`
+                    : `<span style="color:var(--accent);font-weight:700;">A mejorar</span>`;
+            }
+
+            const defSkillRows = [
+                { label: 'Confiabilidad (FLD%)', desc: 'Porcentaje de oportunidades (PO+A+E) que conviertes en out sin cometer error', good: fld >= leagueFld, mine: fld.toFixed(3), league: leagueFld.toFixed(3) },
+                { label: 'Participación ((PO+A)/INN)', desc: 'Cuántas jugadas defensivas completas haces por cada inning que juegas en el campo', good: rangePerInning >= leagueRange, mine: rangePerInning.toFixed(2), league: leagueRange.toFixed(2) },
+                { label: 'Control de errores (E/INN)', desc: 'Errores cometidos por inning jugado en el campo · menos es mejor', good: errRate <= leagueErr, mine: errRate.toFixed(2), league: leagueErr.toFixed(2) },
+            ];
+
+            const chartId = 'profileDefChart';
+
+            container.innerHTML = profileHeaderHtml(key, defStat.name, defStat.number, defStat.team, playerMeta?.positions, compareBtn + toggleBtn) + `
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(70px,1fr));gap:0.5rem;margin-bottom:0.75rem;">
+                    ${[
+                        ['INN', defStat.innings], ['PO', defStat.putouts], ['A', defStat.assists],
+                        ['E', defStat.errors], ['OPP', opp], ['FLD%', fld.toFixed(3)]
+                    ].map(([label, val]) => `
+                        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:0.45rem;text-align:center;">
+                            <div style="font-size:0.55rem;color:var(--muted);">${label}</div>
+                            <div style="font-size:0.95rem;font-weight:900;">${val}</div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:0.75rem 1rem;margin-bottom:1rem;">
+                    <h3 style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:0.5rem;">📋 Resumen defensivo</h3>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(85px,1fr));gap:0.4rem;">
+                        ${[
+                            ['👤', 'Partidos', defStat.games],
+                            ['⏱️', 'Innings', defStat.innings],
+                            ['🧤', 'Putouts', defStat.putouts],
+                            ['🤝', 'Asistencias', defStat.assists],
+                            ['❌', 'Errores', defStat.errors],
+                            ['🎯', 'Oportunidades', opp],
+                            ['📊', 'FLD%', fld.toFixed(3)],
+                            ['📍', 'Posición principal', mainPosition]
+                        ].map(([icon, label, val]) => `
+                            <div style="text-align:center;padding:0.25rem;">
+                                <div style="font-size:0.95rem;">${icon}</div>
+                                <div style="font-size:0.5rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;">${label}</div>
+                                <div style="font-size:0.9rem;font-weight:800;">${val}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:1rem;margin-bottom:1rem;">
+                    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1rem 1.25rem;">
+                        <h3 style="font-size:0.75rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:0.6rem;">📈 Evolución de FLD%</h3>
+                        ${defEvolution.length > 1
+                            ? `<canvas id="${chartId}" height="140"></canvas>`
+                            : `<div class="empty-state"><p>Se necesitan al menos 2 partidos para mostrar la evolución</p></div>`}
+                    </div>
+                    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1rem 1.25rem;">
+                        <h3 style="font-size:0.75rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:0.6rem;">🏆 Rankings de liga</h3>
+                        ${defRankings.map(r => `
+                            <div style="display:flex;justify-content:space-between;padding:0.25rem 0;border-bottom:1px solid var(--border);font-size:0.8rem;">
+                                <span style="color:var(--muted);">${r.label}</span>
+                                <span style="font-weight:700;">${r.r ? `#${r.r.rank} de ${r.r.total}` : '—'}</span>
+                            </div>
+                        `).join('')}
+                        <div style="font-size:0.6rem;color:var(--muted);margin-top:0.5rem;">Entre jugadores con ${MIN_INN}+ innings defensivos</div>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:1rem;margin-bottom:1rem;">
+                    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1rem 1.25rem;">
+                        <h3 style="font-size:0.75rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:0.6rem;">📍 Posiciones jugadas</h3>
+                        ${posRows.length ? posRows.map(([pos, inn]) => `
+                            <div style="margin-bottom:0.5rem;">
+                                <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:0.2rem;">
+                                    <span style="font-weight:700;">${pos}</span>
+                                    <span style="color:var(--muted);">${inn} inn · ${((inn / totalPosInnings) * 100).toFixed(0)}%</span>
+                                </div>
+                                <div style="background:var(--border);border-radius:6px;height:6px;overflow:hidden;">
+                                    <div style="background:var(--accent);height:100%;width:${(inn / totalPosInnings) * 100}%;"></div>
+                                </div>
+                            </div>
+                        `).join('') : `<div class="empty-state"><p>Sin datos de posición registrados</p></div>`}
+                    </div>
+                    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1rem 1.25rem;">
+                        <h3 style="font-size:0.75rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:0.6rem;">💡 Fortalezas y áreas de mejora</h3>
+                        ${defSkillRows.map(s => `
+                            <div style="padding:0.4rem 0;border-bottom:1px solid var(--border);font-size:0.8rem;">
+                                <div style="display:flex;justify-content:space-between;align-items:center;">
+                                    <span style="font-weight:700;">${s.label}</span>
+                                    <span style="text-align:right;">${tag(s.good)}<br><span style="font-size:0.6rem;color:var(--muted);">tuyo ${s.mine} · liga ${s.league}</span></span>
+                                </div>
+                                <div style="font-size:0.65rem;color:var(--muted);margin-top:0.15rem;">${s.desc}</div>
+                            </div>
+                        `).join('')}
+                        <div style="font-size:0.6rem;color:var(--muted);margin-top:0.5rem;">Se compara contra el promedio de toda la liga, tomando en cuenta solo jugadores con ${MIN_INN}+ innings defensivos</div>
+                    </div>
+                </div>
+
+                <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1rem 1.25rem;">
+                    <h3 style="font-size:0.75rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:0.6rem;">📋 Últimos partidos</h3>
+                    ${recentDefGames.length ? `
+                        <div style="overflow-x:auto;">
+                        <table style="width:100%;font-size:0.8rem;border-collapse:collapse;">
+                            <tr style="color:var(--muted);text-align:left;">
+                                <th style="padding:0.3rem 0.5rem;">Fecha</th><th>Rival</th><th>Pos</th><th>PO</th><th>A</th><th>E</th><th style="text-align:right;">FLD%</th>
+                            </tr>
+                            ${recentDefGames.map(g => `
+                                <tr style="border-top:1px solid var(--border);">
+                                    <td style="padding:0.3rem 0.5rem;">${g.date}</td>
+                                    <td>${g.rival}</td><td>${g.pos}</td><td>${g.po}</td><td>${g.a}</td><td>${g.e}</td>
+                                    <td style="text-align:right;">${g.fld}</td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                        </div>
+                    ` : `<div class="empty-state"><p>Sin partidos registrados</p></div>`}
+                </div>
+            `;
+
+            if (defEvolution.length > 1) {
+                setTimeout(() => renderProfileDefChart(chartId, defEvolution), 50);
+            }
+        }
+
+        function renderProfileDefChart(chartId, evolution) {
+            const canvas = document.getElementById(chartId);
+            if (!canvas) return;
+            if (charts.profileDef) {
+                charts.profileDef.destroy();
+                charts.profileDef = null;
+            }
+            const isDark = document.body.classList.contains('dark-theme') ||
+                getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() === '#0d0f14';
+            const textColor = isDark ? '#e8eaf2' : '#1a1d2e';
+            const gridColor = isDark ? '#2a2e3f' : '#d1d5e8';
+
+            charts.profileDef = new Chart(canvas.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: evolution.map(e => e.label),
+                    datasets: [{
+                        data: evolution.map(e => e.fld),
+                        borderColor: '#22c55e',
+                        borderWidth: 2, pointRadius: 2, fill: false, tension: 0.25
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { ticks: { color: textColor, callback: v => v.toFixed(3) }, grid: { color: gridColor } },
+                        x: { ticks: { color: textColor }, grid: { display: false } }
+                    }
+                }
+            });
         }
 
         // ============================================================
@@ -3911,95 +4541,15 @@
             }
 
             comparePlayers.push({ key, ...batter });
-            renderCompareBattingUI();
+            renderCompareUI();
         }
 
         function removeFromCompare(key) {
             comparePlayers = comparePlayers.filter(p => p.key !== key);
-            renderCompareBattingUI();
+            renderCompareUI();
         }
 
-        // ============================================================
-        //  COMPARAR — soporte para PITCHERS (paralelo al de bateadores)
-        // ============================================================
-
-        function populateComparePitcherSelect(aggregated) {
-            const sel = document.getElementById('comparePlayerSelect');
-            const current = sel.value;
-            let pitchers = Object.values(aggregated.pitchers);
-
-            const globalFilter = getTeamFilter();
-            if (globalFilter !== 'all') {
-                pitchers = pitchers.filter(p => p.team === globalFilter);
-            }
-
-            sel.innerHTML = '<option value="">— Seleccionar pitcher —</option>';
-            pitchers
-                .sort((a, b) => a.name.localeCompare(b.name))
-                .forEach(p => {
-                    const opt = document.createElement('option');
-                    opt.value = getPlayerKey(p.name, p.number, p.team);
-                    opt.textContent = `${p.name} (${p.team}) · #${p.number}`;
-                    sel.appendChild(opt);
-                });
-
-            if (current && pitchers.some(p => getPlayerKey(p.name, p.number, p.team) === current)) {
-                sel.value = current;
-            }
-        }
-
-        // Dispara la población del selector correcto según el modo activo
-        // (lo usan la carga inicial y el cambio de pestaña, que no saben de antemano qué modo está activo)
-        function populateActiveCompareSelect(aggregated) {
-            if (compareMode === 'pitch') {
-                populateComparePitcherSelect(aggregated);
-            } else {
-                populateCompareSelect(aggregated);
-            }
-        }
-
-        function addToComparePitcher(name, number, team) {
-            const key = getPlayerKey(name, number, team);
-            const aggregated = aggregateStats(allGames);
-            const pitcher = Object.values(aggregated.pitchers).find(p =>
-                getPlayerKey(p.name, p.number, p.team) === key
-            );
-
-            if (!pitcher) {
-                showToast('⚠️ Pitcher no encontrado en los datos', true);
-                return;
-            }
-
-            if (comparePitchers.some(p => p.key === key)) {
-                showToast('⚠️ Este pitcher ya está en la comparación', true);
-                return;
-            }
-
-            if (comparePitchers.length >= 4) {
-                showToast('⚠️ Máximo 4 pitchers para comparar', true);
-                return;
-            }
-
-            comparePitchers.push({ key, ...pitcher });
-            renderComparePitchingUI();
-        }
-
-        function removeFromComparePitcher(key) {
-            comparePitchers = comparePitchers.filter(p => p.key !== key);
-            renderComparePitchingUI();
-        }
-
-        // Dispatcher genérico: lo usan los sitios que no controlan directamente
-        // qué modo está activo (carga inicial, cambio de pestaña "Comparar").
         function renderCompareUI() {
-            if (compareMode === 'pitch') {
-                renderComparePitchingUI();
-            } else {
-                renderCompareBattingUI();
-            }
-        }
-
-        function renderCompareBattingUI() {
             const container = document.getElementById('compareSelected');
             const chartsContainer = document.getElementById('compareCharts');
 
@@ -4052,10 +4602,10 @@
             `;
             }).join('');
 
-            renderCompareBattingCharts();
+            renderCompareCharts();
         }
 
-        function renderCompareBattingCharts() {
+        function renderCompareCharts() {
             const container = document.getElementById('compareCharts');
 
             if (comparePlayers.length < 2) {
@@ -4132,74 +4682,6 @@
                     }
                 });
             }, 100);
-        }
-
-        // ============================================================
-        //  COMPARAR — render de PITCHERS (tarjetas + tabla coloreada)
-        // ============================================================
-        function renderComparePitchingUI() {
-            const container = document.getElementById('compareSelected');
-            const chartsContainer = document.getElementById('compareCharts');
-
-            if (!comparePitchers.length) {
-                container.innerHTML =
-                    `<div class="empty-state" style="grid-column:1/-1;"><p>Agrega pitchers usando el selector de arriba</p></div>`;
-                chartsContainer.innerHTML = `<div class="empty-state"><p>Agrega pitchers para comparar estadísticas</p></div>`;
-                return;
-            }
-
-            const colors = ['var(--blue)', 'var(--accent)', 'var(--green)', 'var(--pink)'];
-            const stdInnings = getStandardInnings();
-            const profiles = buildPitcherProfiles(comparePitchers);
-
-            container.innerHTML = comparePitchers.map((p, i) => {
-                const profile = profiles[i] || { strengths: [], weaknesses: [] };
-                const tagsHtml = comparePitchers.length < 2
-                    ? `<div style="font-size:0.62rem;color:var(--muted);margin-top:0.4rem;">Agrega otro pitcher para ver fortalezas/debilidades</div>`
-                    : `
-                        <div style="margin-top:0.5rem;display:flex;flex-direction:column;gap:0.3rem;">
-                            ${profile.strengths.length ? `
-                                <div style="font-size:0.62rem;">
-                                    <span style="color:var(--green);font-weight:700;">Fortalezas:</span>
-                                    ${profile.strengths.map(s => `<span class="tag-strength">${s}</span>`).join(' ')}
-                                </div>` : ''}
-                            ${profile.weaknesses.length ? `
-                                <div style="font-size:0.62rem;">
-                                    <span style="color:var(--red);font-weight:700;">A mejorar:</span>
-                                    ${profile.weaknesses.map(s => `<span class="tag-weakness">${s}</span>`).join(' ')}
-                                </div>` : ''}
-                            ${(!profile.strengths.length && !profile.weaknesses.length) ? `
-                                <div style="font-size:0.62rem;color:var(--muted);">⚖️ Sin extremos dentro de este grupo</div>` : ''}
-                        </div>`;
-
-                return `
-                <div class="compare-card selected">
-                    <div class="name" style="color:${colors[i % colors.length]};">${p.name}</div>
-                    <div class="team">${p.team} · #${p.number}</div>
-                    <div style="font-size:0.75rem;margin:0.3rem 0;">
-                        ERA: ${calculateERA(p, stdInnings).toFixed(2)} · WHIP: ${calculateWHIP(p).toFixed(2)}
-                    </div>
-                    <div style="font-size:0.65rem;color:var(--muted);">
-                        ${formatInnings(p.outs||0)} IP · ${p.strikeouts||0} K · ${p.bb||0} BB · ${p.hits||0} H
-                    </div>
-                    ${tagsHtml}
-                    <button class="remove-btn" onclick="removeFromComparePitcher('${p.key}')">✕ Eliminar</button>
-                </div>
-            `;
-            }).join('');
-
-            if (comparePitchers.length < 2) {
-                chartsContainer.innerHTML =
-                    `<div class="empty-state"><p>Agrega al menos 2 pitchers para ver la comparación</p></div>`;
-                return;
-            }
-
-            chartsContainer.innerHTML = `
-                <div class="chart-container">
-                    <h3>🟢🔴 Quién gana cada categoría</h3>
-                    ${renderPitchingComparisonTable(comparePitchers)}
-                </div>
-            `;
         }
 
         // ============================================================
@@ -4411,7 +4893,7 @@
             renderTeamStats();
 
             populateFilters(aggregated);
-            populateActiveCompareSelect(aggregated);
+            populateCompareSelect(aggregated);
             populateSprayPlayerSelect('all');
 
             const globalFilter = document.getElementById('globalTeamFilter');
@@ -4486,7 +4968,7 @@
                     renderPlayersList(aggregated, filters);
                     break;
                 case 'compare':
-                    populateActiveCompareSelect(aggregated);
+                    populateCompareSelect(aggregated);
                     renderCompareUI();
                     break;
                 case 'advanced':
@@ -4903,101 +5385,18 @@
             document.getElementById('compareAddBtn').addEventListener('click', () => {
                 const sel = document.getElementById('comparePlayerSelect');
                 const val = sel.value;
-                if (!val) { showToast(compareMode === 'pitch' ? '⚠️ Selecciona un pitcher' : '⚠️ Selecciona un jugador', true); return; }
+                if (!val) { showToast('⚠️ Selecciona un jugador', true); return; }
                 const aggregated = aggregateStats(allGames);
-                if (compareMode === 'pitch') {
-                    const pitcher = Object.values(aggregated.pitchers).find(p =>
-                        getPlayerKey(p.name, p.number, p.team) === val
-                    );
-                    if (pitcher) addToComparePitcher(pitcher.name, pitcher.number, pitcher.team);
-                } else {
-                    const batter = Object.values(aggregated.batters).find(b =>
-                        getPlayerKey(b.name, b.number, b.team) === val
-                    );
-                    if (batter) addToCompare(batter.name, batter.number, batter.team);
-                }
+                const batter = Object.values(aggregated.batters).find(b =>
+                    getPlayerKey(b.name, b.number, b.team) === val
+                );
+                if (batter) addToCompare(batter.name, batter.number, batter.team);
             });
 
             document.getElementById('compareClearBtn').addEventListener('click', () => {
-                if (compareMode === 'pitch') {
-                    comparePitchers = [];
-                    renderComparePitchingUI();
-                } else {
-                    comparePlayers = [];
-                    renderCompareBattingUI();
-                }
+                comparePlayers = [];
+                renderCompareUI();
                 showToast('🧹 Comparación limpiada');
-            });
-
-            document.getElementById('compareModeBatBtn').addEventListener('click', () => {
-                if (compareMode === 'bat') return;
-                compareMode = 'bat';
-                document.getElementById('compareModeBatBtn').classList.add('active');
-                document.getElementById('compareModePitchBtn').classList.remove('active');
-                document.getElementById('compareSelectLabel').textContent = 'Seleccionar jugadores:';
-                populateCompareSelect(aggregateStats(allGames));
-                renderCompareBattingUI();
-            });
-
-            document.getElementById('compareModePitchBtn').addEventListener('click', () => {
-                if (compareMode === 'pitch') return;
-                compareMode = 'pitch';
-                document.getElementById('compareModePitchBtn').classList.add('active');
-                document.getElementById('compareModeBatBtn').classList.remove('active');
-                document.getElementById('compareSelectLabel').textContent = 'Seleccionar pitchers:';
-                populateComparePitcherSelect(aggregateStats(allGames));
-                renderComparePitchingUI();
-            });
-
-            // ===== MODO SIMPLE / AVANZADO =====
-            function applyStatsMode() {
-                document.body.classList.toggle('simple-mode', statsMode === 'simple');
-                // Si estaba viendo la pestaña Avanzado y se cambia a Simple, regresa al Dashboard
-                // (la pestaña Avanzado queda oculta por CSS, pero no debe quedar "activa" sin verse).
-                if (statsMode === 'simple') {
-                    const advTab = document.getElementById('tab-advanced');
-                    if (advTab && advTab.classList.contains('active')) {
-                        const dashBtn = document.querySelector('.tab-btn[data-tab="dashboard"]');
-                        if (dashBtn) dashBtn.click();
-                    }
-                }
-                // Las tablas de Comparar filtran filas según statsMode, así que hay que
-                // re-renderizar si esa pestaña está activa para que el cambio se note al toque.
-                const compareTab = document.getElementById('tab-compare');
-                if (compareTab && compareTab.classList.contains('active')) {
-                    renderCompareUI();
-                }
-            }
-
-            document.getElementById('statsModeSimpleBtn').addEventListener('click', () => {
-                if (statsMode === 'simple') return;
-                statsMode = 'simple';
-                document.getElementById('statsModeSimpleBtn').classList.add('active');
-                document.getElementById('statsModeAdvBtn').classList.remove('active');
-                applyStatsMode();
-            });
-
-            document.getElementById('statsModeAdvBtn').addEventListener('click', () => {
-                if (statsMode === 'avanzado') return;
-                statsMode = 'avanzado';
-                document.getElementById('statsModeAdvBtn').classList.add('active');
-                document.getElementById('statsModeSimpleBtn').classList.remove('active');
-                applyStatsMode();
-            });
-
-            applyStatsMode(); // aplica el estado inicial (Simple por defecto)
-
-            // ===== TOOLTIPS (ⓘ) — soporte táctil para móvil =====
-            // En escritorio funcionan con :hover (CSS). En móvil no hay hover,
-            // así que un toque abre/cierra el tooltip; tocar fuera lo cierra.
-            document.addEventListener('click', (e) => {
-                const cell = e.target.closest('.tooltip-cell');
-                document.querySelectorAll('.tooltip-cell.tooltip-active').forEach(el => {
-                    if (el !== cell) el.classList.remove('tooltip-active');
-                });
-                if (cell) {
-                    cell.classList.toggle('tooltip-active');
-                }
             });
 
             document.addEventListener('dragover', (e) => {
