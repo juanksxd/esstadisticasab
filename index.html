@@ -630,6 +630,25 @@
         }
 
         /* ===== RESPONSIVE ===== */
+        /* Grid de "Top 5" del Dashboard: 3 columnas en escritorio,
+           se apila en pantallas angostas para que no se corte el texto */
+        @media (max-width: 900px) {
+            .dash-leaders-grid {
+                grid-template-columns: 1fr 1fr !important;
+            }
+        }
+        @media (max-width: 600px) {
+            .dash-leaders-grid {
+                grid-template-columns: 1fr !important;
+                gap: 0.75rem !important;
+            }
+        }
+
+        /* Barra de pestañas: contenedor para el indicador de scroll (ver media query abajo) */
+        .tabs-wrap {
+            position: relative;
+        }
+
         @media (max-width: 768px) {
             body {
                 padding: 0.75rem;
@@ -674,6 +693,28 @@
             .filters input {
                 width: 100%;
             }
+            .tabs {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scroll-snap-type: x proximity;
+            }
+            .tab-btn {
+                scroll-snap-align: start;
+                flex-shrink: 0;
+            }
+            .tabs-wrap::after {
+                content: '';
+                position: absolute;
+                top: 0.25rem; right: 0; bottom: 0.25rem;
+                width: 28px;
+                background: linear-gradient(to right, transparent, var(--bg));
+                pointer-events: none;
+                transition: opacity 0.15s;
+            }
+            .tabs-wrap.scrolled-end::after {
+                opacity: 0;
+            }
             .compare-grid {
                 grid-template-columns: 1fr 1fr;
             }
@@ -711,6 +752,19 @@
             .tab-btn {
                 font-size: 0.6rem;
                 padding: 0.3rem 0.6rem;
+            }
+            .logo {
+                font-size: 1.3rem;
+            }
+            .header-left {
+                gap: 0.6rem;
+            }
+            .header-left > div[style*="background:var(--card)"] {
+                width: 100%;
+            }
+            #globalTeamFilter {
+                flex: 1;
+                min-width: 0 !important;
             }
         }
 
@@ -875,6 +929,7 @@
     </div>
 
     <!-- TABS -->
+    <div class="tabs-wrap" id="tabsWrap">
     <div class="tabs" id="tabBar">
         <button class="tab-btn active" data-tab="dashboard">📊 Dashboard</button>
         <button class="tab-btn" data-tab="batting">🏏 Bateo</button>
@@ -887,6 +942,7 @@
         <button class="tab-btn" data-tab="players">👥 Jugadores</button>
         <button class="tab-btn" data-tab="teamstats">🏅 Equipo</button>
         <button class="tab-btn" data-tab="spraychart">🗺️ Spray Chart</button>
+    </div>
     </div>
 
     <!-- ============================================================ -->
@@ -2571,8 +2627,8 @@
             const sortedGames = [...games].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
 
             let html = `
-                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;">
-                    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1.2rem;">
+                <div class="dash-leaders-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;">
+                    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1.2rem;min-width:0;">
                         <h3 style="font-size:0.8rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:0.75rem;">🏆 Top 5 Bateo (AVG) ${teamFilter !== 'all' ? `· ${teamFilter}` : ''}</h3>
                         ${topBatting.length ? topBatting.map((b, i) => `
                             <div style="display:flex;justify-content:space-between;align-items:center;padding:0.4rem 0;border-bottom:1px solid var(--border);">
@@ -2588,7 +2644,7 @@
                             </div>
                         `).join('') : '<div style="color:var(--muted);font-size:0.8rem;">Sin datos suficientes</div>'}
                     </div>
-                    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1.2rem;">
+                    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1.2rem;min-width:0;">
                         <h3 style="font-size:0.8rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:0.75rem;">🧢 Top 5 Pitcheo (ERA) ${teamFilter !== 'all' ? `· ${teamFilter}` : ''}</h3>
                         ${topPitching.length ? topPitching.map((p, i) => `
                             <div style="display:flex;justify-content:space-between;align-items:center;padding:0.4rem 0;border-bottom:1px solid var(--border);">
@@ -2604,7 +2660,7 @@
                             </div>
                         `).join('') : '<div style="color:var(--muted);font-size:0.8rem;">Sin datos suficientes</div>'}
                     </div>
-                    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1.2rem;">
+                    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1.2rem;min-width:0;">
                         <h3 style="font-size:0.8rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:0.75rem;">🚀 Top 5 HR ${teamFilter !== 'all' ? `· ${teamFilter}` : ''}</h3>
                         ${topHR.length ? topHR.map((b, i) => `
                             <div style="display:flex;justify-content:space-between;align-items:center;padding:0.4rem 0;border-bottom:1px solid var(--border);">
@@ -5260,6 +5316,21 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+
+            // Indicador de scroll en la barra de pestañas: oculta el degradado
+            // cuando ya no hay más contenido a la derecha para deslizar
+            const tabBarEl = document.getElementById('tabBar');
+            const tabsWrapEl = document.getElementById('tabsWrap');
+            function updateTabsScrollState() {
+                if (!tabBarEl || !tabsWrapEl) return;
+                const atEnd = tabBarEl.scrollLeft + tabBarEl.clientWidth >= tabBarEl.scrollWidth - 2;
+                tabsWrapEl.classList.toggle('scrolled-end', atEnd);
+            }
+            if (tabBarEl) {
+                tabBarEl.addEventListener('scroll', updateTabsScrollState);
+                window.addEventListener('resize', updateTabsScrollState);
+                updateTabsScrollState();
+            }
 
             document.getElementById('loadBtn').addEventListener('click', () => {
                 document.getElementById('fileInput').click();
