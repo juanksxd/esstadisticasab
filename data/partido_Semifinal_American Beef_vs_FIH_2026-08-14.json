@@ -1,0 +1,1954 @@
+{
+  "version": "9.5",
+  "timestamp": "2026-08-16T02:55:37.980Z",
+  "teams": {
+    "away": "American Beef",
+    "home": "FIH"
+  },
+  "meta": {
+    "date": "2026-08-14",
+    "field": "Polideportivo",
+    "umpire": "Jose",
+    "notes": "",
+    "endReason": "Partido completo"
+  },
+  "finalScore": {
+    "away": 2,
+    "home": "FIH"
+  },
+  "gameState": {
+    "inning": 9,
+    "isTop": false,
+    "outs": 0,
+    "balls": 0,
+    "strikes": 0,
+    "bases": [
+      false,
+      false,
+      false
+    ],
+    "runners": {
+      "0": null,
+      "1": null,
+      "2": null
+    },
+    "activeTeam": "away",
+    "autoSwitch": true,
+    "battingAway": {
+      "batter": 7,
+      "turn": 4
+    },
+    "battingHome": {
+      "batter": 6,
+      "turn": 5
+    },
+    "consecutiveStrikes": 0,
+    "gameOver": true,
+    "_pendingEndReason": null
+  },
+  "scoreboard": {
+    "away_1": "2",
+    "away_2": "0",
+    "away_3": "0",
+    "away_4": "0",
+    "away_5": "0",
+    "away_6": "0",
+    "away_7": "0",
+    "away_8": "0",
+    "away_9": "0",
+    "home_1": "0",
+    "home_2": "0",
+    "home_3": "2",
+    "home_4": "0",
+    "home_5": "4",
+    "home_6": "0",
+    "home_7": "2",
+    "home_8": "3",
+    "home_9": "0"
+  },
+  "teamsData": {
+    "away": {
+      "players": {
+        "1": "Jonathan Esparza",
+        "2": "Joel Valdez",
+        "3": "Yahir Villegas",
+        "4": "Ivan Dominguez",
+        "5": "Juan Morales",
+        "6": "Jose Solares",
+        "7": "Armando Esparza",
+        "8": "Raul Perez",
+        "9": "Ever Porras",
+        "10": "Leonel Quiñonez",
+        "11": "Oviel Orozco"
+      },
+      "numbers": {
+        "1": "33",
+        "2": "1",
+        "3": "34",
+        "4": "1",
+        "5": "28",
+        "6": "9",
+        "7": "25",
+        "8": "10",
+        "9": "22",
+        "10": "27",
+        "11": "48"
+      },
+      "positions": {
+        "1": "CF",
+        "2": "LF",
+        "3": "SS",
+        "4": "3B",
+        "5": "1B",
+        "6": "RF",
+        "7": "P",
+        "8": "2B",
+        "9": "C",
+        "10": "SS",
+        "11": "DH"
+      },
+      "actions": {
+        "1-1": "K",
+        "2-1": "BB",
+        "3-1": "HR",
+        "4-1": "S1",
+        "5-1": "BB",
+        "6-1": "S1",
+        "7-1": "O",
+        "8-1": "O",
+        "9-1": "O",
+        "10-1": "O",
+        "11-1": "O",
+        "1-2": "O",
+        "2-2": "E",
+        "3-2": "O",
+        "4-2": "O",
+        "5-2": "S1",
+        "6-2": "BB",
+        "7-2": "FC",
+        "8-2": "O",
+        "9-2": "O",
+        "10-2": "O",
+        "11-2": "K",
+        "1-3": "S1",
+        "2-3": "O",
+        "3-3": "O",
+        "4-3": "BB",
+        "5-3": "FC",
+        "6-3": "FC",
+        "7-3": "K",
+        "8-3": "E",
+        "9-3": "K",
+        "10-3": "O",
+        "11-3": "O",
+        "1-4": "O",
+        "2-4": "O",
+        "3-4": "S1",
+        "4-4": "BB",
+        "5-4": "S1",
+        "6-4": "O"
+      },
+      "actionInnings": {
+        "1-1": "1▲",
+        "2-1": "1▲",
+        "3-1": "1▲",
+        "4-1": "1▲",
+        "5-1": "1▲",
+        "6-1": "1▲",
+        "7-1": "1▲",
+        "8-1": "2▲",
+        "9-1": "2▲",
+        "10-1": "2▲",
+        "11-1": "3▲",
+        "1-2": "3▲",
+        "2-2": "3▲",
+        "3-2": "3▲",
+        "4-2": "4▲",
+        "5-2": "4▲",
+        "6-2": "4▲",
+        "7-2": "4▲",
+        "8-2": "4▲",
+        "9-2": "5▲",
+        "10-2": "5▲",
+        "11-2": "5▲",
+        "1-3": "6▲",
+        "2-3": "6▲",
+        "3-3": "6▲",
+        "4-3": "7▲",
+        "5-3": "7▲",
+        "6-3": "7▲",
+        "7-3": "7▲",
+        "8-3": "8▲",
+        "9-3": "8▲",
+        "10-3": "8▲",
+        "11-3": "8▲",
+        "1-4": "9▲",
+        "2-4": "9▲",
+        "3-4": "9▲",
+        "4-4": "9▲",
+        "5-4": "9▲",
+        "6-4": "9▲"
+      },
+      "actionHitZones": {
+        "3-1": {
+          "zone": "rf",
+          "zoneLabel": "Right Field",
+          "action": "HR",
+          "actionDetail": "HR",
+          "actionLabel": "Home Run"
+        },
+        "4-1": {
+          "zone": "lf",
+          "zoneLabel": "Left Field",
+          "action": "S1",
+          "actionDetail": "S1",
+          "actionLabel": "Sencillo"
+        },
+        "6-1": {
+          "zone": "rf",
+          "zoneLabel": "Right Field",
+          "action": "S1",
+          "actionDetail": "S1",
+          "actionLabel": "Sencillo"
+        },
+        "7-1": {
+          "zone": "lf",
+          "zoneLabel": "Left Field",
+          "action": "O",
+          "actionDetail": "fly",
+          "actionLabel": "Fly Out"
+        },
+        "8-1": {
+          "zone": "rf",
+          "zoneLabel": "Right Field",
+          "action": "O",
+          "actionDetail": "fly",
+          "actionLabel": "Fly Out"
+        },
+        "9-1": {
+          "zone": "3b",
+          "zoneLabel": "3ra Base / SS",
+          "action": "O",
+          "actionDetail": "rola",
+          "actionLabel": "Rola"
+        },
+        "10-1": {
+          "zone": "ss",
+          "zoneLabel": "Short Stop",
+          "action": "O",
+          "actionDetail": "rola",
+          "actionLabel": "Rola"
+        },
+        "11-1": {
+          "zone": "p",
+          "zoneLabel": "Lanzador",
+          "action": "O",
+          "actionDetail": "rola",
+          "actionLabel": "Rola"
+        },
+        "1-2": {
+          "zone": "rf",
+          "zoneLabel": "Right Field",
+          "action": "O",
+          "actionDetail": "fly",
+          "actionLabel": "Fly Out"
+        },
+        "2-2": {
+          "zone": "ss",
+          "zoneLabel": "Short Stop",
+          "action": "E",
+          "actionDetail": "error_tiro_bat1b",
+          "actionLabel": "E-Tiro"
+        },
+        "3-2": {
+          "zone": "ss",
+          "zoneLabel": "Short Stop",
+          "action": "O",
+          "actionDetail": "fly",
+          "actionLabel": "Fly Out"
+        },
+        "4-2": {
+          "zone": "3b",
+          "zoneLabel": "3ra Base / SS",
+          "action": "O",
+          "actionDetail": "rola",
+          "actionLabel": "Rola"
+        },
+        "5-2": {
+          "zone": "2b",
+          "zoneLabel": "2da Base",
+          "action": "S1",
+          "actionDetail": "S1",
+          "actionLabel": "Sencillo"
+        },
+        "7-2": {
+          "zone": "ss",
+          "zoneLabel": "Short Stop",
+          "action": "FC",
+          "actionDetail": "FC",
+          "actionLabel": "Field Choice"
+        },
+        "8-2": {
+          "zone": "rf",
+          "zoneLabel": "Right Field",
+          "action": "O",
+          "actionDetail": "fly",
+          "actionLabel": "Fly Out"
+        },
+        "9-2": {
+          "zone": "p",
+          "zoneLabel": "Lanzador",
+          "action": "O",
+          "actionDetail": "rola",
+          "actionLabel": "Rola"
+        },
+        "10-2": {
+          "zone": "ss",
+          "zoneLabel": "Short Stop",
+          "action": "O",
+          "actionDetail": "lineout",
+          "actionLabel": "Line Out"
+        },
+        "1-3": {
+          "zone": "cf",
+          "zoneLabel": "Center Field",
+          "action": "S1",
+          "actionDetail": "S1",
+          "actionLabel": "Sencillo"
+        },
+        "2-3": {
+          "zone": "cf",
+          "zoneLabel": "Center Field",
+          "action": "O",
+          "actionDetail": "fly",
+          "actionLabel": "Fly Out"
+        },
+        "3-3": {
+          "zone": "2b",
+          "zoneLabel": "2da Base",
+          "action": "O",
+          "actionDetail": "dp_gen",
+          "actionLabel": "DP"
+        },
+        "5-3": {
+          "zone": "ss",
+          "zoneLabel": "Short Stop",
+          "action": "FC",
+          "actionDetail": "FC",
+          "actionLabel": "Field Choice"
+        },
+        "6-3": {
+          "zone": "3b",
+          "zoneLabel": "3ra Base / SS",
+          "action": "FC",
+          "actionDetail": "FC",
+          "actionLabel": "Field Choice"
+        },
+        "8-3": {
+          "zone": "3b",
+          "zoneLabel": "3ra Base / SS",
+          "action": "E",
+          "actionDetail": "error_tiro_bat1b",
+          "actionLabel": "E-Tiro"
+        },
+        "10-3": {
+          "zone": "lf",
+          "zoneLabel": "Left Field",
+          "action": "O",
+          "actionDetail": "fly",
+          "actionLabel": "Fly Out"
+        },
+        "11-3": {
+          "zone": "3b",
+          "zoneLabel": "3ra Base / SS",
+          "action": "O",
+          "actionDetail": "rola",
+          "actionLabel": "Rola"
+        },
+        "5-5": {
+          "zone": "cf",
+          "zoneLabel": "Center Field",
+          "action": "S1",
+          "actionDetail": "S1",
+          "actionLabel": "Sencillo"
+        },
+        "1-4": {
+          "zone": "ss",
+          "zoneLabel": "Short Stop",
+          "action": "O",
+          "actionDetail": "fly",
+          "actionLabel": "Fly Out"
+        },
+        "2-4": {
+          "zone": "3b",
+          "zoneLabel": "3ra Base / SS",
+          "action": "O",
+          "actionDetail": "rola",
+          "actionLabel": "Rola"
+        },
+        "3-4": {
+          "zone": "cf",
+          "zoneLabel": "Center Field",
+          "action": "S1",
+          "actionDetail": "S1",
+          "actionLabel": "Sencillo"
+        },
+        "5-4": {
+          "zone": "rf",
+          "zoneLabel": "Right Field",
+          "action": "S1",
+          "actionDetail": "S1",
+          "actionLabel": "Sencillo"
+        }
+      },
+      "actionOutTypes": {
+        "7-1": "fly",
+        "8-1": "fly",
+        "9-1": "rola",
+        "10-1": "rola",
+        "11-1": "rola",
+        "1-2": "fly",
+        "2-2": "error_tiro_bat1b",
+        "3-2": "fly",
+        "4-2": "rola",
+        "8-2": "fly",
+        "9-2": "rola",
+        "10-2": "lineout",
+        "2-3": "fly",
+        "3-3": "dp_gen",
+        "8-3": "error_tiro_bat1b",
+        "10-3": "fly",
+        "11-3": "rola",
+        "1-4": "fly",
+        "2-4": "rola",
+        "6-4": "rola"
+      },
+      "substitutions": [
+        {
+          "inning": 5,
+          "orderNum": 9,
+          "playerOut": "20 Ivan Baez",
+          "playerIn": "Ever Porras",
+          "pos": "C",
+          "playerNum": "22",
+          "time": "8:14:18 p.m."
+        },
+        {
+          "inning": 7,
+          "orderNum": 6,
+          "playerOut": "2 Jesus Lozoya",
+          "playerIn": "Jose Solares",
+          "pos": "RF",
+          "playerNum": "9",
+          "time": "8:33:16 p.m."
+        },
+        {
+          "inning": 7,
+          "orderNum": 7,
+          "playerOut": "36 Jesus Martinez",
+          "playerIn": "Armando Esparza",
+          "pos": "P",
+          "playerNum": "25",
+          "time": "8:34:19 p.m."
+        },
+        {
+          "inning": 7,
+          "orderNum": 10,
+          "playerOut": "21 Juan Nevarez",
+          "playerIn": "Leonel Quiñonez",
+          "pos": "SS",
+          "playerNum": "27",
+          "time": "8:36:01 p.m."
+        },
+        {
+          "inning": 8,
+          "orderNum": 8,
+          "playerOut": "32 Edgar Payan",
+          "playerIn": "Raul Perez",
+          "pos": "2B",
+          "playerNum": "10",
+          "time": "8:39:29 p.m."
+        }
+      ],
+      "playerStats": {
+        "1": {
+          "runs": 0,
+          "rbi": 0
+        },
+        "2": {
+          "runs": 0,
+          "rbi": 0
+        },
+        "3": {
+          "runs": 0,
+          "rbi": 2
+        },
+        "4": {
+          "runs": 0,
+          "rbi": 0
+        },
+        "5": {
+          "runs": 0,
+          "rbi": 0
+        },
+        "6": {
+          "runs": 0,
+          "rbi": 0
+        },
+        "7": {
+          "runs": 0,
+          "rbi": 0
+        },
+        "8": {
+          "runs": 0,
+          "rbi": 0
+        },
+        "9": {
+          "runs": 0,
+          "rbi": 0
+        },
+        "10": {
+          "runs": 0,
+          "rbi": 0
+        }
+      },
+      "playerGameStats": {
+        "1": {
+          "atBats": 4,
+          "pa": 4,
+          "runs": 0,
+          "rbi": 0,
+          "singles": 1,
+          "doubles": 0,
+          "triples": 0,
+          "hr": 0,
+          "bb": 0,
+          "hbp": 0,
+          "strikeouts": 1,
+          "sacFly": 0,
+          "sacBunt": 0
+        },
+        "2": {
+          "atBats": 3,
+          "pa": 5,
+          "runs": 1,
+          "rbi": 0,
+          "singles": 0,
+          "doubles": 0,
+          "triples": 0,
+          "hr": 0,
+          "bb": 1,
+          "hbp": 0,
+          "strikeouts": 0,
+          "sacFly": 0,
+          "sacBunt": 0
+        },
+        "3": {
+          "atBats": 4,
+          "pa": 4,
+          "runs": 1,
+          "rbi": 2,
+          "singles": 1,
+          "doubles": 0,
+          "triples": 0,
+          "hr": 1,
+          "bb": 0,
+          "hbp": 0,
+          "strikeouts": 0,
+          "sacFly": 0,
+          "sacBunt": 0
+        },
+        "4": {
+          "atBats": 2,
+          "pa": 4,
+          "runs": 0,
+          "rbi": 0,
+          "singles": 1,
+          "doubles": 0,
+          "triples": 0,
+          "hr": 0,
+          "bb": 2,
+          "hbp": 0,
+          "strikeouts": 0,
+          "sacFly": 0,
+          "sacBunt": 0
+        },
+        "5": {
+          "atBats": 3,
+          "pa": 4,
+          "runs": 0,
+          "rbi": 0,
+          "singles": 2,
+          "doubles": 0,
+          "triples": 0,
+          "hr": 0,
+          "bb": 1,
+          "hbp": 0,
+          "strikeouts": 0,
+          "sacFly": 0,
+          "sacBunt": 0
+        },
+        "6": {
+          "atBats": 2,
+          "pa": 2,
+          "runs": 0,
+          "rbi": 0,
+          "singles": 0,
+          "doubles": 0,
+          "triples": 0,
+          "hr": 0,
+          "bb": 0,
+          "hbp": 0,
+          "strikeouts": 0,
+          "sacFly": 0,
+          "sacBunt": 0
+        },
+        "7": {
+          "atBats": 1,
+          "pa": 1,
+          "runs": 0,
+          "rbi": 0,
+          "singles": 0,
+          "doubles": 0,
+          "triples": 0,
+          "hr": 0,
+          "bb": 0,
+          "hbp": 0,
+          "strikeouts": 1,
+          "sacFly": 0,
+          "sacBunt": 0
+        },
+        "8": {
+          "atBats": 1,
+          "pa": 1,
+          "runs": 0,
+          "rbi": 0,
+          "singles": 0,
+          "doubles": 0,
+          "triples": 0,
+          "hr": 0,
+          "bb": 0,
+          "hbp": 0,
+          "strikeouts": 0,
+          "sacFly": 0,
+          "sacBunt": 0
+        },
+        "9": {
+          "atBats": 2,
+          "pa": 2,
+          "runs": 0,
+          "rbi": 0,
+          "singles": 0,
+          "doubles": 0,
+          "triples": 0,
+          "hr": 0,
+          "bb": 0,
+          "hbp": 0,
+          "strikeouts": 1,
+          "sacFly": 0,
+          "sacBunt": 0
+        },
+        "10": {
+          "atBats": 1,
+          "pa": 1,
+          "runs": 0,
+          "rbi": 0,
+          "singles": 0,
+          "doubles": 0,
+          "triples": 0,
+          "hr": 0,
+          "bb": 0,
+          "hbp": 0,
+          "strikeouts": 0,
+          "sacFly": 0,
+          "sacBunt": 0
+        },
+        "11": {
+          "atBats": 3,
+          "pa": 3,
+          "runs": 0,
+          "rbi": 0,
+          "singles": 0,
+          "doubles": 0,
+          "triples": 0,
+          "hr": 0,
+          "bb": 0,
+          "hbp": 0,
+          "strikeouts": 1,
+          "sacFly": 0,
+          "sacBunt": 0
+        }
+      },
+      "fieldingStats": {
+        "1": {
+          "po": 3,
+          "a": 0,
+          "e": 0
+        },
+        "2": {
+          "po": 3,
+          "a": 0,
+          "e": 0
+        },
+        "3": {
+          "po": 0,
+          "a": 6,
+          "e": 0
+        },
+        "4": {
+          "po": 1,
+          "a": 1,
+          "e": 0
+        },
+        "5": {
+          "po": 5,
+          "a": 0,
+          "e": 0
+        },
+        "6": {
+          "po": 0,
+          "a": 0,
+          "e": 0
+        },
+        "7": {
+          "po": 0,
+          "a": 0,
+          "e": 0
+        },
+        "8": {
+          "po": 0,
+          "a": 0,
+          "e": 1
+        },
+        "9": {
+          "po": 0,
+          "a": 0,
+          "e": 0
+        },
+        "10": {
+          "po": 0,
+          "a": 0,
+          "e": 0
+        }
+      },
+      "actionFCTypes": {
+        "7-2": "out_3b",
+        "5-3": "out_2b",
+        "6-3": "out_2b"
+      },
+      "actionDPKeys": {
+        "3-3": "A1"
+      },
+      "playerSnapshots": [
+        {
+          "orderNum": 9,
+          "name": "Ivan Baez",
+          "number": "20",
+          "inningOut": 5,
+          "stats": {
+            "atBats": 1,
+            "pa": 1,
+            "runs": 0,
+            "rbi": 0,
+            "singles": 0,
+            "doubles": 0,
+            "triples": 0,
+            "hr": 0,
+            "bb": 0,
+            "hbp": 0,
+            "strikeouts": 0,
+            "sacFly": 0,
+            "sacBunt": 0
+          },
+          "fielding": {
+            "po": 0,
+            "a": 0,
+            "e": 0
+          }
+        },
+        {
+          "orderNum": 6,
+          "name": "Jesus Lozoya",
+          "number": "2",
+          "inningOut": 7,
+          "stats": {
+            "atBats": 1,
+            "pa": 2,
+            "runs": 0,
+            "rbi": 0,
+            "singles": 1,
+            "doubles": 0,
+            "triples": 0,
+            "hr": 0,
+            "bb": 1,
+            "hbp": 0,
+            "strikeouts": 0,
+            "sacFly": 0,
+            "sacBunt": 0
+          },
+          "fielding": {
+            "po": 1,
+            "a": 0,
+            "e": 0
+          }
+        },
+        {
+          "orderNum": 7,
+          "name": "Jesus Martinez",
+          "number": "36",
+          "inningOut": 7,
+          "stats": {
+            "atBats": 2,
+            "pa": 2,
+            "runs": 0,
+            "rbi": 0,
+            "singles": 0,
+            "doubles": 0,
+            "triples": 0,
+            "hr": 0,
+            "bb": 0,
+            "hbp": 0,
+            "strikeouts": 0,
+            "sacFly": 0,
+            "sacBunt": 0
+          },
+          "fielding": {
+            "po": 4,
+            "a": 1,
+            "e": 0
+          }
+        },
+        {
+          "orderNum": 10,
+          "name": "Juan Nevarez",
+          "number": "21",
+          "inningOut": 7,
+          "stats": {
+            "atBats": 2,
+            "pa": 2,
+            "runs": 0,
+            "rbi": 0,
+            "singles": 0,
+            "doubles": 0,
+            "triples": 0,
+            "hr": 0,
+            "bb": 0,
+            "hbp": 0,
+            "strikeouts": 0,
+            "sacFly": 0,
+            "sacBunt": 0
+          },
+          "fielding": {
+            "po": 0,
+            "a": 0,
+            "e": 0
+          }
+        },
+        {
+          "orderNum": 8,
+          "name": "Edgar Payan",
+          "number": "32",
+          "inningOut": 8,
+          "stats": {
+            "atBats": 2,
+            "pa": 2,
+            "runs": 0,
+            "rbi": 0,
+            "singles": 0,
+            "doubles": 0,
+            "triples": 0,
+            "hr": 0,
+            "bb": 0,
+            "hbp": 0,
+            "strikeouts": 0,
+            "sacFly": 0,
+            "sacBunt": 0
+          },
+          "fielding": {
+            "po": 1,
+            "a": 0,
+            "e": 0
+          }
+        }
+      ],
+      "lineupSize": 11,
+      "defensiveInnings": {
+        "1": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "2": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "3": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "4": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "5": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "6": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "7": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "8": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "9": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "10": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "11": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    "home": {
+      "players": {
+        "1": "Estrada",
+        "2": "Carreon",
+        "3": "Esparza",
+        "4": "Chaparro",
+        "5": "Ramirez",
+        "6": "Rodriguez",
+        "7": "Delgado",
+        "8": "polo",
+        "9": "Ortega",
+        "10": "zubia"
+      },
+      "numbers": {
+        "1": "1",
+        "2": "3",
+        "3": "4",
+        "4": "66",
+        "5": "8",
+        "6": "2",
+        "7": "5",
+        "8": "?",
+        "9": "99",
+        "10": "98"
+      },
+      "positions": {
+        "1": "SF",
+        "2": "LF",
+        "3": "P",
+        "4": "SS",
+        "5": "3B",
+        "6": "1B",
+        "7": "RF",
+        "8": "2B",
+        "9": "C",
+        "10": "CF"
+      },
+      "actions": {
+        "1-1": "K",
+        "2-1": "O",
+        "3-1": "O",
+        "4-1": "S1",
+        "5-1": "FC",
+        "6-1": "S1",
+        "7-1": "S1",
+        "8-1": "O",
+        "9-1": "S1",
+        "10-1": "FC",
+        "1-2": "FC",
+        "2-2": "S2",
+        "3-2": "S1",
+        "4-2": "O",
+        "5-2": "O",
+        "6-2": "BB",
+        "7-2": "K",
+        "8-2": "S1",
+        "9-2": "O",
+        "10-2": "S1",
+        "1-3": "S1",
+        "2-3": "S1",
+        "3-3": "S2",
+        "4-3": "S1",
+        "5-3": "O",
+        "6-3": "S1",
+        "7-3": "S1",
+        "8-3": "O",
+        "9-3": "K",
+        "10-3": "O",
+        "1-4": "O",
+        "2-4": "O",
+        "3-4": "O",
+        "4-4": "S2",
+        "5-4": "S1",
+        "6-4": "S1",
+        "7-4": "O",
+        "8-4": "O",
+        "9-4": "O",
+        "10-4": "S1",
+        "1-5": "S1",
+        "2-5": "E",
+        "3-5": "S1",
+        "4-5": "BB",
+        "5-5": "S1"
+      },
+      "actionInnings": {
+        "1-1": "1▼",
+        "2-1": "1▼",
+        "3-1": "1▼",
+        "4-1": "2▼",
+        "5-1": "2▼",
+        "6-1": "2▼",
+        "7-1": "2▼",
+        "8-1": "2▼",
+        "9-1": "3▼",
+        "10-1": "3▼",
+        "1-2": "3▼",
+        "2-2": "3▼",
+        "3-2": "3▼",
+        "4-2": "3▼",
+        "5-2": "4▼",
+        "6-2": "4▼",
+        "7-2": "4▼",
+        "8-2": "4▼",
+        "9-2": "4▼",
+        "10-2": "5▼",
+        "1-3": "5▼",
+        "2-3": "5▼",
+        "3-3": "5▼",
+        "4-3": "5▼",
+        "5-3": "5▼",
+        "6-3": "5▼",
+        "7-3": "5▼",
+        "8-3": "5▼",
+        "9-3": "6▼",
+        "10-3": "6▼",
+        "1-4": "6▼",
+        "2-4": "7▼",
+        "3-4": "7▼",
+        "4-4": "7▼",
+        "5-4": "7▼",
+        "6-4": "7▼",
+        "7-4": "7▼",
+        "8-4": "8▼",
+        "9-4": "8▼",
+        "10-4": "8▼",
+        "1-5": "8▼",
+        "2-5": "8▼",
+        "3-5": "8▼",
+        "4-5": "8▼",
+        "5-5": "8▼"
+      },
+      "actionHitZones": {
+        "2-1": {
+          "zone": "cf",
+          "zoneLabel": "Center Field",
+          "action": "O",
+          "actionDetail": "fly",
+          "actionLabel": "Fly Out"
+        },
+        "3-1": {
+          "zone": "cf",
+          "zoneLabel": "Center Field",
+          "action": "O",
+          "actionDetail": "fly",
+          "actionLabel": "Fly Out"
+        },
+        "4-1": {
+          "zone": "rf",
+          "zoneLabel": "Right Field",
+          "action": "S1",
+          "actionDetail": "S1",
+          "actionLabel": "Sencillo"
+        },
+        "5-1": {
+          "zone": "2b",
+          "zoneLabel": "2da Base",
+          "action": "FC",
+          "actionDetail": "FC",
+          "actionLabel": "Field Choice"
+        },
+        "6-1": {
+          "zone": "rf",
+          "zoneLabel": "Right Field",
+          "action": "S1",
+          "actionDetail": "S1",
+          "actionLabel": "Sencillo"
+        },
+        "7-1": {
+          "zone": "rf",
+          "zoneLabel": "Right Field",
+          "action": "S1",
+          "actionDetail": "S1",
+          "actionLabel": "Sencillo"
+        },
+        "8-1": {
+          "zone": "ss",
+          "zoneLabel": "Short Stop",
+          "action": "O",
+          "actionDetail": "dp_gen",
+          "actionLabel": "DP"
+        },
+        "9-1": {
+          "zone": "rf",
+          "zoneLabel": "Right Field",
+          "action": "S1",
+          "actionDetail": "S1",
+          "actionLabel": "Sencillo"
+        },
+        "10-1": {
+          "zone": "ss",
+          "zoneLabel": "Short Stop",
+          "action": "FC",
+          "actionDetail": "FC",
+          "actionLabel": "Field Choice"
+        },
+        "1-2": {
+          "zone": "ss",
+          "zoneLabel": "Short Stop",
+          "action": "FC",
+          "actionDetail": "FC",
+          "actionLabel": "Field Choice"
+        },
+        "2-2": {
+          "zone": "lf",
+          "zoneLabel": "Left Field",
+          "action": "S2",
+          "actionDetail": "S2",
+          "actionLabel": "Doble"
+        },
+        "3-2": {
+          "zone": "rf",
+          "zoneLabel": "Right Field",
+          "action": "S1",
+          "actionDetail": "S1",
+          "actionLabel": "Sencillo"
+        },
+        "4-2": {
+          "zone": "lf",
+          "zoneLabel": "Left Field",
+          "action": "O",
+          "actionDetail": "fly",
+          "actionLabel": "Fly Out"
+        },
+        "5-2": {
+          "zone": "rf",
+          "zoneLabel": "Right Field",
+          "action": "O",
+          "actionDetail": "fly",
+          "actionLabel": "Fly Out"
+        },
+        "8-2": {
+          "zone": "3b",
+          "zoneLabel": "3ra Base / SS",
+          "action": "S1",
+          "actionDetail": "S1",
+          "actionLabel": "Sencillo"
+        },
+        "9-2": {
+          "zone": "ss",
+          "zoneLabel": "Short Stop",
+          "action": "O",
+          "actionDetail": "rola",
+          "actionLabel": "Rola"
+        },
+        "10-2": {
+          "zone": "lf",
+          "zoneLabel": "Left Field",
+          "action": "S1",
+          "actionDetail": "S1",
+          "actionLabel": "Sencillo"
+        },
+        "1-3": {
+          "zone": "cf",
+          "zoneLabel": "Center Field",
+          "action": "S1",
+          "actionDetail": "S1",
+          "actionLabel": "Sencillo"
+        },
+        "2-3": {
+          "zone": "cf",
+          "zoneLabel": "Center Field",
+          "action": "S1",
+          "actionDetail": "S1",
+          "actionLabel": "Sencillo"
+        },
+        "3-3": {
+          "zone": "lf",
+          "zoneLabel": "Left Field",
+          "action": "S2",
+          "actionDetail": "S2",
+          "actionLabel": "Doble"
+        },
+        "4-3": {
+          "zone": "lf",
+          "zoneLabel": "Left Field",
+          "action": "S1",
+          "actionDetail": "S1",
+          "actionLabel": "Sencillo"
+        },
+        "5-3": {
+          "zone": "lf",
+          "zoneLabel": "Left Field",
+          "action": "O",
+          "actionDetail": "fly",
+          "actionLabel": "Fly Out"
+        },
+        "6-3": {
+          "zone": "lf",
+          "zoneLabel": "Left Field",
+          "action": "S1",
+          "actionDetail": "S1",
+          "actionLabel": "Sencillo"
+        },
+        "7-3": {
+          "zone": "rf",
+          "zoneLabel": "Right Field",
+          "action": "S1",
+          "actionDetail": "S1",
+          "actionLabel": "Sencillo"
+        },
+        "8-3": {
+          "zone": "ss",
+          "zoneLabel": "Short Stop",
+          "action": "O",
+          "actionDetail": "rola",
+          "actionLabel": "Rola"
+        },
+        "10-3": {
+          "zone": "ss",
+          "zoneLabel": "Short Stop",
+          "action": "O",
+          "actionDetail": "rola",
+          "actionLabel": "Rola"
+        },
+        "1-4": {
+          "zone": "sf",
+          "zoneLabel": "Short Fielder",
+          "action": "O",
+          "actionDetail": "fly",
+          "actionLabel": "Fly Out"
+        },
+        "2-4": {
+          "zone": "cf",
+          "zoneLabel": "Center Field",
+          "action": "O",
+          "actionDetail": "fly",
+          "actionLabel": "Fly Out"
+        },
+        "3-4": {
+          "zone": "sf",
+          "zoneLabel": "Short Fielder",
+          "action": "O",
+          "actionDetail": "fly",
+          "actionLabel": "Fly Out"
+        },
+        "4-4": {
+          "zone": "lf",
+          "zoneLabel": "Left Field",
+          "action": "S2",
+          "actionDetail": "S2",
+          "actionLabel": "Doble"
+        },
+        "5-4": {
+          "zone": "lf",
+          "zoneLabel": "Left Field",
+          "action": "S1",
+          "actionDetail": "S1",
+          "actionLabel": "Sencillo"
+        },
+        "6-4": {
+          "zone": "rf",
+          "zoneLabel": "Right Field",
+          "action": "S1",
+          "actionDetail": "S1",
+          "actionLabel": "Sencillo"
+        },
+        "7-4": {
+          "zone": "3b",
+          "zoneLabel": "3ra Base / SS",
+          "action": "O",
+          "actionDetail": "fly",
+          "actionLabel": "Fly Out"
+        },
+        "8-4": {
+          "zone": "lf",
+          "zoneLabel": "Left Field",
+          "action": "O",
+          "actionDetail": "fly",
+          "actionLabel": "Fly Out"
+        },
+        "9-4": {
+          "zone": "3b",
+          "zoneLabel": "3ra Base / SS",
+          "action": "O",
+          "actionDetail": "rola",
+          "actionLabel": "Rola"
+        },
+        "10-4": {
+          "zone": "2b",
+          "zoneLabel": "2da Base",
+          "action": "S1",
+          "actionDetail": "S1",
+          "actionLabel": "Sencillo"
+        },
+        "1-5": {
+          "zone": "2b",
+          "zoneLabel": "2da Base",
+          "action": "S1",
+          "actionDetail": "S1",
+          "actionLabel": "Sencillo"
+        },
+        "2-5": {
+          "zone": "2b",
+          "zoneLabel": "2da Base",
+          "action": "E",
+          "actionDetail": "error_recepcion_bat1b",
+          "actionLabel": "E-Recep"
+        },
+        "3-5": {
+          "zone": "ss",
+          "zoneLabel": "Short Stop",
+          "action": "S1",
+          "actionDetail": "S1",
+          "actionLabel": "Sencillo"
+        }
+      },
+      "actionOutTypes": {
+        "2-1": "fly",
+        "3-1": "fly",
+        "8-1": "dp_gen",
+        "4-2": "fly",
+        "5-2": "fly",
+        "9-2": "rola",
+        "5-3": "fly",
+        "8-3": "rola",
+        "10-3": "rola",
+        "1-4": "fly",
+        "2-4": "fly",
+        "3-4": "fly",
+        "7-4": "fly",
+        "8-4": "fly",
+        "9-4": "rola",
+        "2-5": "error_recepcion_bat1b"
+      },
+      "substitutions": [
+        {
+          "inning": 8,
+          "orderNum": 8,
+          "playerOut": "6 Zermeño",
+          "playerIn": "polo",
+          "pos": "2B",
+          "playerNum": "?",
+          "time": "8:44:23 p.m."
+        },
+        {
+          "inning": 8,
+          "orderNum": 9,
+          "playerOut": "9 Gonzalez",
+          "playerIn": "Ortega",
+          "pos": "C",
+          "playerNum": "99",
+          "time": "8:45:01 p.m."
+        },
+        {
+          "inning": 8,
+          "orderNum": 10,
+          "playerOut": "10 Zermeño",
+          "playerIn": "zubia",
+          "pos": "CF",
+          "playerNum": "98",
+          "time": "8:50:43 p.m."
+        }
+      ],
+      "playerStats": {
+        "1": {
+          "runs": 0,
+          "rbi": 0
+        },
+        "2": {
+          "runs": 0,
+          "rbi": 0
+        },
+        "3": {
+          "runs": 0,
+          "rbi": 0
+        },
+        "4": {
+          "runs": 0,
+          "rbi": 0
+        },
+        "5": {
+          "runs": 0,
+          "rbi": 0
+        },
+        "6": {
+          "runs": 0,
+          "rbi": 0
+        },
+        "7": {
+          "runs": 0,
+          "rbi": 0
+        },
+        "8": {
+          "runs": 0,
+          "rbi": 0
+        },
+        "9": {
+          "runs": 0,
+          "rbi": 0
+        },
+        "10": {
+          "runs": 0,
+          "rbi": 0
+        }
+      },
+      "playerGameStats": {
+        "1": {
+          "atBats": 5,
+          "pa": 7,
+          "runs": 2,
+          "rbi": 0,
+          "singles": 2,
+          "doubles": 0,
+          "triples": 0,
+          "hr": 0,
+          "bb": 0,
+          "hbp": 0,
+          "strikeouts": 1,
+          "sacFly": 0,
+          "sacBunt": 0
+        },
+        "2": {
+          "atBats": 5,
+          "pa": 8,
+          "runs": 3,
+          "rbi": 1,
+          "singles": 1,
+          "doubles": 1,
+          "triples": 0,
+          "hr": 0,
+          "bb": 0,
+          "hbp": 0,
+          "strikeouts": 0,
+          "sacFly": 0,
+          "sacBunt": 0
+        },
+        "3": {
+          "atBats": 5,
+          "pa": 7,
+          "runs": 2,
+          "rbi": 2,
+          "singles": 2,
+          "doubles": 1,
+          "triples": 0,
+          "hr": 0,
+          "bb": 0,
+          "hbp": 0,
+          "strikeouts": 0,
+          "sacFly": 0,
+          "sacBunt": 0
+        },
+        "4": {
+          "atBats": 4,
+          "pa": 7,
+          "runs": 2,
+          "rbi": 3,
+          "singles": 2,
+          "doubles": 1,
+          "triples": 0,
+          "hr": 0,
+          "bb": 1,
+          "hbp": 0,
+          "strikeouts": 0,
+          "sacFly": 0,
+          "sacBunt": 0
+        },
+        "5": {
+          "atBats": 5,
+          "pa": 6,
+          "runs": 1,
+          "rbi": 3,
+          "singles": 2,
+          "doubles": 0,
+          "triples": 0,
+          "hr": 0,
+          "bb": 0,
+          "hbp": 0,
+          "strikeouts": 0,
+          "sacFly": 0,
+          "sacBunt": 0
+        },
+        "6": {
+          "atBats": 3,
+          "pa": 4,
+          "runs": 0,
+          "rbi": 1,
+          "singles": 3,
+          "doubles": 0,
+          "triples": 0,
+          "hr": 0,
+          "bb": 1,
+          "hbp": 0,
+          "strikeouts": 0,
+          "sacFly": 0,
+          "sacBunt": 0
+        },
+        "7": {
+          "atBats": 4,
+          "pa": 4,
+          "runs": 0,
+          "rbi": 1,
+          "singles": 2,
+          "doubles": 0,
+          "triples": 0,
+          "hr": 0,
+          "bb": 0,
+          "hbp": 0,
+          "strikeouts": 1,
+          "sacFly": 0,
+          "sacBunt": 0
+        },
+        "8": {
+          "atBats": 1,
+          "pa": 1,
+          "runs": 0,
+          "rbi": 0,
+          "singles": 0,
+          "doubles": 0,
+          "triples": 0,
+          "hr": 0,
+          "bb": 0,
+          "hbp": 0,
+          "strikeouts": 0,
+          "sacFly": 0,
+          "sacBunt": 0
+        },
+        "9": {
+          "atBats": 1,
+          "pa": 1,
+          "runs": 0,
+          "rbi": 0,
+          "singles": 0,
+          "doubles": 0,
+          "triples": 0,
+          "hr": 0,
+          "bb": 0,
+          "hbp": 0,
+          "strikeouts": 0,
+          "sacFly": 0,
+          "sacBunt": 0
+        },
+        "10": {
+          "atBats": 1,
+          "pa": 1,
+          "runs": 0,
+          "rbi": 0,
+          "singles": 1,
+          "doubles": 0,
+          "triples": 0,
+          "hr": 0,
+          "bb": 0,
+          "hbp": 0,
+          "strikeouts": 0,
+          "sacFly": 0,
+          "sacBunt": 0
+        }
+      },
+      "fieldingStats": {
+        "2": {
+          "po": 2,
+          "a": 0,
+          "e": 0
+        },
+        "3": {
+          "po": 0,
+          "a": 2,
+          "e": 0
+        },
+        "4": {
+          "po": 3,
+          "a": 3,
+          "e": 1
+        },
+        "5": {
+          "po": 1,
+          "a": 5,
+          "e": 1
+        },
+        "6": {
+          "po": 8,
+          "a": 0,
+          "e": 0
+        },
+        "7": {
+          "po": 3,
+          "a": 0,
+          "e": 0
+        },
+        "8": {
+          "po": 0,
+          "a": 0,
+          "e": 0
+        },
+        "9": {
+          "po": 0,
+          "a": 0,
+          "e": 0
+        },
+        "10": {
+          "po": 0,
+          "a": 0,
+          "e": 0
+        }
+      },
+      "actionFCTypes": {
+        "5-1": "out_2b",
+        "10-1": "out_2b",
+        "1-2": "out_2b"
+      },
+      "actionDPKeys": {
+        "8-1": "A1"
+      },
+      "playerSnapshots": [
+        {
+          "orderNum": 8,
+          "name": "Zermeño",
+          "number": "6",
+          "inningOut": 8,
+          "stats": {
+            "atBats": 3,
+            "pa": 4,
+            "runs": 1,
+            "rbi": 0,
+            "singles": 1,
+            "doubles": 0,
+            "triples": 0,
+            "hr": 0,
+            "bb": 0,
+            "hbp": 0,
+            "strikeouts": 0,
+            "sacFly": 0,
+            "sacBunt": 0
+          },
+          "fielding": {
+            "po": 3,
+            "a": 1,
+            "e": 0
+          }
+        },
+        {
+          "orderNum": 9,
+          "name": "Gonzalez",
+          "number": "9",
+          "inningOut": 8,
+          "stats": {
+            "atBats": 3,
+            "pa": 3,
+            "runs": 0,
+            "rbi": 0,
+            "singles": 1,
+            "doubles": 0,
+            "triples": 0,
+            "hr": 0,
+            "bb": 0,
+            "hbp": 0,
+            "strikeouts": 1,
+            "sacFly": 0,
+            "sacBunt": 0
+          },
+          "fielding": {
+            "po": 0,
+            "a": 0,
+            "e": 0
+          }
+        },
+        {
+          "orderNum": 10,
+          "name": "Zermeño",
+          "number": "10",
+          "inningOut": 8,
+          "stats": {
+            "atBats": 3,
+            "pa": 3,
+            "runs": 0,
+            "rbi": 0,
+            "singles": 1,
+            "doubles": 0,
+            "triples": 0,
+            "hr": 0,
+            "bb": 0,
+            "hbp": 0,
+            "strikeouts": 0,
+            "sacFly": 0,
+            "sacBunt": 0
+          },
+          "fielding": {
+            "po": 1,
+            "a": 0,
+            "e": 0
+          }
+        }
+      ],
+      "lineupSize": 10,
+      "defensiveInnings": {
+        "1": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "2": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "3": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "4": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "5": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "6": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "7": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "8": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "9": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "10": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ]
+      }
+    }
+  },
+  "pitchers": {
+    "away": [
+      {
+        "id": 1786844372929.3542,
+        "name": "Juan Nevarez",
+        "number": "21",
+        "inningStart": 1,
+        "isTopStart": true,
+        "pitches": 81,
+        "strikes": 31,
+        "balls": 22,
+        "hits": 14,
+        "hr": 0,
+        "bb": 1,
+        "hbp": 0,
+        "outs": 19,
+        "runs": 6,
+        "earnedRuns": 6,
+        "strikeouts": 3,
+        "inPlay": 28
+      },
+      {
+        "id": 1786847775274.9197,
+        "name": "Leonel Quiñonez",
+        "number": "27",
+        "inningStart": 7,
+        "isTopStart": false,
+        "pitches": 45,
+        "strikes": 15,
+        "balls": 18,
+        "hits": 7,
+        "hr": 0,
+        "bb": 1,
+        "hbp": 0,
+        "outs": 5,
+        "runs": 5,
+        "earnedRuns": 5,
+        "strikeouts": 0,
+        "inPlay": 12,
+        "errorsAllowed": 1
+      }
+    ],
+    "home": [
+      {
+        "id": 1786844372929.4722,
+        "name": "Esparza",
+        "number": "4",
+        "inningStart": 1,
+        "isTopStart": true,
+        "pitches": 118,
+        "strikes": 42,
+        "balls": 46,
+        "hits": 7,
+        "hr": 1,
+        "bb": 5,
+        "hbp": 0,
+        "outs": 27,
+        "runs": 2,
+        "earnedRuns": 2,
+        "strikeouts": 4,
+        "inPlay": 30,
+        "errorsAllowed": 2
+      }
+    ]
+  },
+  "currentPitcherId": {
+    "away": 1786847775274.9197,
+    "home": 1786844372929.4722
+  }
+}
