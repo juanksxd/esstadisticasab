@@ -6,6 +6,7 @@
     <title>📊 Stats Hub Pro - Visor de Estadísticas</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <style>
         /* ===== ESTILOS ===== */
         * {
@@ -3642,6 +3643,7 @@
 
             const chartId = 'teamProfileTrendChart';
             const toggleBtn = `<button class="btn" onclick="toggleTeamProfileMode()">${isOff ? '🛡️ Ver defensiva' : '🏏 Ver ofensiva'}</button>`;
+            const teamPdfBtn = `<button class="btn btn-accent" onclick="generateTeamSeasonPDF('${t.team}')">📄 Mi Temporada</button>`;
 
             const statsRow = isOff
                 ? [['AVG', formatAvg(t.avg)], ['OBP', formatAvg(t.obp)], ['SLG', formatAvg(t.slg)], ['OPS', t.ops.toFixed(3)], ['HR', t.hr || 0], ['Carreras', t.runsFor]]
@@ -3726,6 +3728,7 @@
                         <span style="font-size:0.8rem;color:var(--muted);">PCT ${(t.pct * 100).toFixed(1)}%</span>
                         <span style="font-size:0.8rem;font-weight:700;color:${t.diff >= 0 ? 'var(--green)' : 'var(--red)'};">Diff ${t.diff >= 0 ? '+' : ''}${t.diff}</span>
                         ${toggleBtn}
+                        ${teamPdfBtn}
                     </div>
                 </div>
 
@@ -4049,7 +4052,8 @@
                 const number = playerMeta ? playerMeta.number : '';
                 const team = playerMeta ? playerMeta.team : '';
                 const toggleBtn = `<button class="btn" onclick="togglePlayerProfileMode('${key}')">🛡️ Ver defensiva</button>`;
-                container.innerHTML = profileHeaderHtml(key, name, number, team, playerMeta?.positions, toggleBtn) +
+                const pdfBtn = `<button class="btn btn-accent" onclick="generatePlayerCV('${key}')">📄 Mi Temporada</button>`;
+                container.innerHTML = profileHeaderHtml(key, name, number, team, playerMeta?.positions, toggleBtn + pdfBtn) +
                     `<div class="empty-state"><p>No se encontraron datos de bateo para este jugador</p></div>`;
                 return;
             }
@@ -4164,8 +4168,9 @@
             const chartId = 'profileAvgChart';
             const compareBtn = `<button class="btn btn-success" onclick="profileAddToCompare('${key}')">➕ Comparar</button>`;
             const toggleBtn = `<button class="btn" onclick="togglePlayerProfileMode('${key}')">🛡️ Ver defensiva</button>`;
+            const pdfBtn = `<button class="btn btn-accent" onclick="generatePlayerCV('${key}')">📄 Mi Temporada</button>`;
 
-            container.innerHTML = profileHeaderHtml(key, batter.name, batter.number, batter.team, playerMeta?.positions, compareBtn + toggleBtn) + `
+            container.innerHTML = profileHeaderHtml(key, batter.name, batter.number, batter.team, playerMeta?.positions, compareBtn + toggleBtn + pdfBtn) + `
                 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(70px,1fr));gap:0.5rem;margin-bottom:0.75rem;">
                     ${[
                         ['AVG', formatAvg(avg)], ['OBP', formatAvg(obp)], ['SLG', formatAvg(slg)],
@@ -4317,12 +4322,13 @@
 
             const toggleBtn = `<button class="btn" onclick="togglePlayerProfileMode('${key}')">🏏 Ver ofensiva</button>`;
             const compareBtn = `<button class="btn btn-success" onclick="profileAddToCompare('${key}')">➕ Comparar</button>`;
+            const pdfBtn = `<button class="btn btn-accent" onclick="generatePlayerCV('${key}')">📄 Mi Temporada</button>`;
 
             if (!defStat) {
                 const name = playerMeta ? playerMeta.name : '—';
                 const number = playerMeta ? playerMeta.number : '';
                 const team = playerMeta ? playerMeta.team : '';
-                container.innerHTML = profileHeaderHtml(key, name, number, team, playerMeta?.positions, compareBtn + toggleBtn) +
+                container.innerHTML = profileHeaderHtml(key, name, number, team, playerMeta?.positions, compareBtn + toggleBtn + pdfBtn) +
                     `<div class="empty-state"><p>No hay datos defensivos registrados para este jugador</p></div>`;
                 return;
             }
@@ -4411,7 +4417,7 @@
 
             const chartId = 'profileDefChart';
 
-            container.innerHTML = profileHeaderHtml(key, defStat.name, defStat.number, defStat.team, playerMeta?.positions, compareBtn + toggleBtn) + `
+            container.innerHTML = profileHeaderHtml(key, defStat.name, defStat.number, defStat.team, playerMeta?.positions, compareBtn + toggleBtn + pdfBtn) + `
                 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(70px,1fr));gap:0.5rem;margin-bottom:0.75rem;">
                     ${[
                         ['INN', defStat.innings], ['PO', defStat.putouts], ['A', defStat.assists],
@@ -4552,6 +4558,649 @@
                     }
                 }
             });
+        }
+
+        // ============================================================
+        //  CV DE JUGADOR (PDF) — reporte descargable estilo "currículum"
+        // ============================================================
+        //  Genera un PDF de una página con el resumen de temporada del
+        //  jugador: datos generales, estadísticas ofensivas y defensivas,
+        //  y fortalezas/áreas de mejora (comparadas contra el promedio de
+        //  liga). Pensado para imprimir o enviar a otros equipos.
+
+        function generatePlayerCV(key) {
+            if (!window.jspdf || !window.jspdf.jsPDF) {
+                showToast('⚠️ No se pudo cargar el generador de PDF', true);
+                return;
+            }
+            const { jsPDF } = window.jspdf;
+            const aggregated = aggregateStats(allGames);
+            const playerMeta = aggregated.players[key];
+            const batter = aggregated.batters[key];
+            const defAll = processDefenseStats(allGames);
+            const defStat = defAll.find(d => getPlayerKey(d.name, d.number, d.team) === key);
+
+            if (!playerMeta) {
+                showToast('⚠️ No se encontraron datos de este jugador', true);
+                return;
+            }
+
+            const name = playerMeta.name;
+            const number = playerMeta.number || '';
+            const team = playerMeta.team || '';
+            const positions = (playerMeta.positions || []).join(', ');
+            const games = playerMeta.games || batter?.games || defStat?.games || 0;
+
+            // ---- Paleta "limpia para imprimir" ----
+            const COLOR_TEXT = [26, 29, 46];      // #1a1d2e
+            const COLOR_MUTED = [110, 116, 138];  // gris
+            const COLOR_ACCENT = [37, 99, 235];   // azul
+            const COLOR_LINE = [220, 223, 232];   // gris claro
+            const COLOR_GREEN = [22, 163, 74];
+            const COLOR_RED = [220, 38, 38];
+
+            const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+            const pageW = doc.internal.pageSize.getWidth();
+            const marginX = 16;
+            let y = 18;
+
+            // ---- Header ----
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(22);
+            doc.setTextColor(...COLOR_TEXT);
+            doc.text(name, marginX, y);
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            doc.setTextColor(...COLOR_MUTED);
+            const dateStr = new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
+            doc.text(`Generado el ${dateStr}`, pageW - marginX, y - 3, { align: 'right' });
+
+            y += 6;
+            doc.setFontSize(11.5);
+            doc.setTextColor(...COLOR_ACCENT);
+            const subtitleParts = [`#${number || '—'}`, team || 'Equipo no especificado'];
+            if (positions) subtitleParts.push(positions);
+            doc.text(subtitleParts.join('  ·  '), marginX, y);
+
+            y += 3;
+            doc.setDrawColor(...COLOR_LINE);
+            doc.setLineWidth(0.4);
+            doc.line(marginX, y, pageW - marginX, y);
+            y += 9;
+
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(9);
+            doc.setTextColor(...COLOR_MUTED);
+            doc.text('CURRÍCULUM DE TEMPORADA · SOFTBOL LENTO', marginX, y);
+            y += 9;
+
+            // ---- Helper: título de sección ----
+            function sectionTitle(label) {
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(11.5);
+                doc.setTextColor(...COLOR_TEXT);
+                doc.text(label, marginX, y);
+                y += 2;
+                doc.setDrawColor(...COLOR_LINE);
+                doc.setLineWidth(0.2);
+                doc.line(marginX, y, pageW - marginX, y);
+                y += 6.5;
+            }
+
+            // ---- Helper: fila de tarjetas de estadísticas grandes ----
+            function statCardsRow(items) {
+                const gap = 4;
+                const boxW = (pageW - marginX * 2 - gap * (items.length - 1)) / items.length;
+                const boxH = 17;
+                items.forEach((item, i) => {
+                    const x = marginX + i * (boxW + gap);
+                    doc.setDrawColor(...COLOR_LINE);
+                    doc.setFillColor(248, 249, 252);
+                    doc.roundedRect(x, y, boxW, boxH, 1.5, 1.5, 'FD');
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(13);
+                    doc.setTextColor(...COLOR_ACCENT);
+                    doc.text(String(item.val), x + boxW / 2, y + 9, { align: 'center' });
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(7);
+                    doc.setTextColor(...COLOR_MUTED);
+                    doc.text(item.label, x + boxW / 2, y + 14, { align: 'center' });
+                });
+                y += boxH + 8;
+            }
+
+            // ---- Helper: tabla simple de dos columnas (label / valor) ----
+            function statTable(rows, columns = 4) {
+                const gap = 4;
+                const colW = (pageW - marginX * 2 - gap * (columns - 1)) / columns;
+                const rowH = 8;
+                const rowsPerCol = Math.ceil(rows.length / columns);
+                rows.forEach((r, i) => {
+                    const col = Math.floor(i / rowsPerCol);
+                    const rowIdx = i % rowsPerCol;
+                    const x = marginX + col * (colW + gap);
+                    const ry = y + rowIdx * rowH;
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(8.3);
+                    doc.setTextColor(...COLOR_MUTED);
+                    doc.text(r.label, x, ry);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setTextColor(...COLOR_TEXT);
+                    doc.text(String(r.val), x + colW - 2, ry, { align: 'right' });
+                    doc.setDrawColor(...COLOR_LINE);
+                    doc.setLineWidth(0.15);
+                    doc.line(x, ry + 1.6, x + colW, ry + 1.6);
+                });
+                y += rowsPerCol * rowH + 6;
+            }
+
+            // =========================================================
+            //  RESUMEN GENERAL
+            // =========================================================
+            sectionTitle('RESUMEN GENERAL');
+            statCardsRow([
+                { label: 'PARTIDOS JUGADOS', val: games },
+                { label: 'TURNOS AL BAT (PA)', val: batter?.pa || 0 },
+                { label: 'INNINGS DEFENSIVOS', val: defStat ? defStat.innings.toFixed(1) : '0' },
+                { label: 'POSICIÓN PRINCIPAL', val: (playerMeta.positions && playerMeta.positions[0]) || '—' },
+            ]);
+
+            // =========================================================
+            //  OFENSIVA
+            // =========================================================
+            sectionTitle('ESTADÍSTICAS OFENSIVAS');
+            if (batter) {
+                const hits = calculateHits(batter);
+                const avg = calculateBattingAVG(batter);
+                const obp = calculateBattingOBP(batter);
+                const slg = calculateBattingSLG(batter);
+                const ops = calculateBattingOPS(batter);
+                const iso = calculateISO(batter);
+                const kPct = calculateKPercent_bat(batter);
+                const bbPct = calculateBBPercent(batter);
+                const tb = calculateTotalBases(batter);
+                const xbh = calculateXBH(batter);
+
+                statCardsRow([
+                    { label: 'AVG', val: formatAvg(avg) },
+                    { label: 'OBP', val: formatAvg(obp) },
+                    { label: 'SLG', val: formatAvg(slg) },
+                    { label: 'OPS', val: formatAvg(ops) },
+                ]);
+
+                statTable([
+                    { label: 'Hits (H)', val: hits },
+                    { label: 'Dobles (2B)', val: batter.doubles || 0 },
+                    { label: 'Triples (3B)', val: batter.triples || 0 },
+                    { label: 'Jonrones (HR)', val: batter.hr || 0 },
+                    { label: 'Carreras impulsadas (RBI)', val: batter.rbi || 0 },
+                    { label: 'Bases por bolas (BB)', val: batter.bb || 0 },
+                    { label: 'Ponches (K)', val: batter.strikeouts || 0 },
+                    { label: 'Extrabases (XBH)', val: xbh },
+                    { label: 'Bases totales (TB)', val: tb },
+                    { label: 'Turnos al bat (AB)', val: batter.atBats || 0 },
+                    { label: 'Poder aislado (ISO)', val: formatAvg(iso) },
+                    { label: 'K% / BB%', val: `${kPct.toFixed(1)}% / ${bbPct.toFixed(1)}%` },
+                ], 3);
+            } else {
+                doc.setFont('helvetica', 'italic');
+                doc.setFontSize(9);
+                doc.setTextColor(...COLOR_MUTED);
+                doc.text('Sin datos de bateo registrados en la temporada.', marginX, y);
+                y += 10;
+            }
+
+            // =========================================================
+            //  DEFENSA
+            // =========================================================
+            sectionTitle('ESTADÍSTICAS DEFENSIVAS');
+            if (defStat) {
+                const fld = calculateFieldingPercent(defStat);
+                const opp = calculateOPP(defStat);
+
+                statCardsRow([
+                    { label: 'FLD%', val: formatAvg(fld) },
+                    { label: 'PUTOUTS (PO)', val: defStat.putouts || 0 },
+                    { label: 'ASISTENCIAS (A)', val: defStat.assists || 0 },
+                    { label: 'ERRORES (E)', val: defStat.errors || 0 },
+                ]);
+
+                statTable([
+                    { label: 'Innings jugados', val: (defStat.innings || 0).toFixed(1) },
+                    { label: 'Oportunidades (OPP)', val: opp },
+                    { label: 'Posiciones jugadas', val: positions || '—' },
+                ], 3);
+            } else {
+                doc.setFont('helvetica', 'italic');
+                doc.setFontSize(9);
+                doc.setTextColor(...COLOR_MUTED);
+                doc.text('Sin datos defensivos registrados en la temporada.', marginX, y);
+                y += 10;
+            }
+
+            // =========================================================
+            //  FORTALEZAS Y ÁREAS DE MEJORA (vs. promedio de liga)
+            // =========================================================
+            sectionTitle('FORTALEZAS Y ÁREAS DE MEJORA');
+
+            const strengths = [];
+            if (batter) {
+                const allBatters = Object.values(aggregated.batters);
+                const leagueISO = leagueAverage(allBatters, calculateISO);
+                const leagueK = leagueAverage(allBatters, calculateKPercent_bat);
+                const leagueBB = leagueAverage(allBatters, calculateBBPercent);
+                const iso = calculateISO(batter);
+                const kPct = calculateKPercent_bat(batter);
+                const bbPct = calculateBBPercent(batter);
+                strengths.push({
+                    label: 'Poder (ISO)', good: iso >= leagueISO,
+                    detail: `Tuyo ${formatAvg(iso)} · Liga ${formatAvg(leagueISO)}`,
+                    desc: 'Extrabases producidos sin contar sencillos.'
+                });
+                strengths.push({
+                    label: 'Control de ponches (K%)', good: kPct <= leagueK,
+                    detail: `Tuyo ${kPct.toFixed(1)}% · Liga ${leagueK.toFixed(1)}%`,
+                    desc: 'Porcentaje de ponches por turno al plato (menos es mejor).'
+                });
+                strengths.push({
+                    label: 'Disciplina (BB%)', good: bbPct >= leagueBB,
+                    detail: `Tuyo ${bbPct.toFixed(1)}% · Liga ${leagueBB.toFixed(1)}%`,
+                    desc: 'Porcentaje de bases por bolas por turno al plato.'
+                });
+            }
+            if (defStat) {
+                const leagueFld = leagueAverageDef(defAll, calculateFieldingPercent);
+                const fld = calculateFieldingPercent(defStat);
+                strengths.push({
+                    label: 'Porcentaje defensivo (FLD%)', good: fld >= leagueFld,
+                    detail: `Tuyo ${formatAvg(fld)} · Liga ${formatAvg(leagueFld)}`,
+                    desc: 'Jugadas correctamente ejecutadas sobre el total de oportunidades.'
+                });
+            }
+
+            if (strengths.length) {
+                strengths.forEach(s => {
+                    const color = s.good ? COLOR_GREEN : COLOR_RED;
+                    const tagLabel = s.good ? 'FUERTE' : 'A MEJORAR';
+
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(9.5);
+                    doc.setTextColor(...COLOR_TEXT);
+                    doc.text(s.label, marginX, y);
+
+                    doc.setFontSize(7.5);
+                    doc.setTextColor(...color);
+                    doc.text(tagLabel, pageW - marginX, y, { align: 'right' });
+
+                    y += 4.3;
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(8);
+                    doc.setTextColor(...COLOR_MUTED);
+                    doc.text(`${s.desc}  (${s.detail})`, marginX, y);
+                    y += 5.5;
+                    doc.setDrawColor(...COLOR_LINE);
+                    doc.setLineWidth(0.15);
+                    doc.line(marginX, y, pageW - marginX, y);
+                    y += 5.5;
+                });
+                doc.setFont('helvetica', 'italic');
+                doc.setFontSize(7);
+                doc.setTextColor(...COLOR_MUTED);
+                doc.text('Comparado contra el promedio de la liga (jugadores con muestra mínima suficiente).', marginX, y);
+                y += 8;
+            } else {
+                doc.setFont('helvetica', 'italic');
+                doc.setFontSize(9);
+                doc.setTextColor(...COLOR_MUTED);
+                doc.text('Sin datos suficientes para calcular fortalezas.', marginX, y);
+                y += 10;
+            }
+
+            // ---- Footer ----
+            const pageH = doc.internal.pageSize.getHeight();
+            doc.setDrawColor(...COLOR_LINE);
+            doc.setLineWidth(0.3);
+            doc.line(marginX, pageH - 14, pageW - marginX, pageH - 14);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(7.5);
+            doc.setTextColor(...COLOR_MUTED);
+            doc.text('Generado automáticamente con STATS HUB · Reporte de temporada regular', marginX, pageH - 9);
+
+            const safeName = name.replace(/[^a-z0-9]+/gi, '_');
+            doc.save(`Mi_Temporada_${safeName}_${team.replace(/[^a-z0-9]+/gi, '_')}.pdf`);
+            showToast('📄 Reporte de temporada generado');
+        }
+
+        // ============================================================
+        //  MI TEMPORADA — EQUIPO (PDF) — reporte de temporada del equipo
+        // ============================================================
+        //  Genera un PDF de una página con el resumen de temporada del
+        //  equipo: récord, estadísticas ofensivas/defensivas/pitcheo,
+        //  fortalezas vs. el resto de la liga, y líderes del equipo.
+
+        function generateTeamSeasonPDF(team) {
+            if (!window.jspdf || !window.jspdf.jsPDF) {
+                showToast('⚠️ No se pudo cargar el generador de PDF', true);
+                return;
+            }
+            const { jsPDF } = window.jspdf;
+            const aggregated = aggregateStats(allGames);
+            const allTeamStats = processTeamStats(allGames);
+            const t = allTeamStats.find(x => x.team === team);
+            if (!t) {
+                showToast('⚠️ No se encontraron datos de este equipo', true);
+                return;
+            }
+            const defAll = processDefenseStats(allGames);
+            const stdInnings = getStandardInnings();
+
+            // ---- Agregado defensivo del equipo ----
+            const teamDef = defAll.filter(d => d.team === t.team);
+            const teamPO = teamDef.reduce((s, d) => s + (d.putouts || 0), 0);
+            const teamA = teamDef.reduce((s, d) => s + (d.assists || 0), 0);
+            const teamE = teamDef.reduce((s, d) => s + (d.errors || 0), 0);
+            const teamInnDef = teamDef.reduce((s, d) => s + (d.innings || 0), 0);
+            const teamFld = calculateFieldingPercent({ putouts: teamPO, assists: teamA, errors: teamE });
+
+            // ---- Promedios de liga para comparar ----
+            const leagueOps = leagueAverage(allTeamStats, x => x.ops, 0);
+            const leagueEra = leagueAverage(allTeamStats, x => x.era, 0);
+            const leagueWhip = leagueAverage(allTeamStats, x => x.whip, 0);
+            const leagueErrRate = leagueAverage(allTeamStats, x => x.innings > 0 ? x.defensiveErrors / x.innings : 0, 0);
+            const leagueHRPerGame = leagueAverage(allTeamStats, x => x.games > 0 ? x.hr / x.games : 0, 0);
+            const teamErrRate = t.innings > 0 ? t.defensiveErrors / t.innings : 0;
+            const teamHRPerGame = t.games > 0 ? t.hr / t.games : 0;
+
+            const teamsFieldingAgg = {};
+            defAll.forEach(d => {
+                if (!teamsFieldingAgg[d.team]) teamsFieldingAgg[d.team] = { po: 0, a: 0, e: 0 };
+                teamsFieldingAgg[d.team].po += d.putouts || 0;
+                teamsFieldingAgg[d.team].a += d.assists || 0;
+                teamsFieldingAgg[d.team].e += d.errors || 0;
+            });
+            const teamFldValues = Object.values(teamsFieldingAgg).map(x => calculateFieldingPercent({ putouts: x.po, assists: x.a, errors: x.e }));
+            const leagueTeamFld = teamFldValues.length ? teamFldValues.reduce((s, v) => s + v, 0) / teamFldValues.length : 0;
+
+            // ---- Líderes del equipo ----
+            const teamBatters = Object.values(aggregated.batters)
+                .filter(b => b.team === t.team && (b.atBats || 0) >= 5)
+                .sort((a, b) => calculateBattingOPS(b) - calculateBattingOPS(a))
+                .slice(0, 5);
+            const teamFielders = teamDef
+                .filter(d => (d.innings || 0) >= 3)
+                .sort((a, b) => calculateFieldingPercent(b) - calculateFieldingPercent(a))
+                .slice(0, 5);
+            const teamPitchers = Object.values(aggregated.pitchers)
+                .filter(p => p.team === t.team)
+                .sort((a, b) => (b.outs || 0) - (a.outs || 0))
+                .slice(0, 5);
+
+            // ---- Paleta "limpia para imprimir" ----
+            const COLOR_TEXT = [26, 29, 46];
+            const COLOR_MUTED = [110, 116, 138];
+            const COLOR_ACCENT = [37, 99, 235];
+            const COLOR_LINE = [220, 223, 232];
+            const COLOR_GREEN = [22, 163, 74];
+            const COLOR_RED = [220, 38, 38];
+
+            const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+            const pageW = doc.internal.pageSize.getWidth();
+            const pageH = doc.internal.pageSize.getHeight();
+            const marginX = 16;
+            let y = 18;
+
+            // ---- Header ----
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(22);
+            doc.setTextColor(...COLOR_TEXT);
+            doc.text(t.team, marginX, y);
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            doc.setTextColor(...COLOR_MUTED);
+            const dateStr = new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
+            doc.text(`Generado el ${dateStr}`, pageW - marginX, y - 3, { align: 'right' });
+
+            y += 6;
+            doc.setFontSize(11.5);
+            doc.setTextColor(t.wins >= t.losses ? COLOR_GREEN[0] : COLOR_RED[0], t.wins >= t.losses ? COLOR_GREEN[1] : COLOR_RED[1], t.wins >= t.losses ? COLOR_GREEN[2] : COLOR_RED[2]);
+            doc.text(`${t.wins}W - ${t.losses}L - ${t.ties}T  ·  PCT ${(t.pct * 100).toFixed(1)}%  ·  Diff ${t.diff >= 0 ? '+' : ''}${t.diff}`, marginX, y);
+
+            y += 3;
+            doc.setDrawColor(...COLOR_LINE);
+            doc.setLineWidth(0.4);
+            doc.line(marginX, y, pageW - marginX, y);
+            y += 9;
+
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(9);
+            doc.setTextColor(...COLOR_MUTED);
+            doc.text('REPORTE DE TEMPORADA DE EQUIPO · SOFTBOL LENTO', marginX, y);
+            y += 9;
+
+            function sectionTitle(label) {
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(11.5);
+                doc.setTextColor(...COLOR_TEXT);
+                doc.text(label, marginX, y);
+                y += 2;
+                doc.setDrawColor(...COLOR_LINE);
+                doc.setLineWidth(0.2);
+                doc.line(marginX, y, pageW - marginX, y);
+                y += 6.5;
+            }
+
+            function statCardsRow(items) {
+                const gap = 4;
+                const boxW = (pageW - marginX * 2 - gap * (items.length - 1)) / items.length;
+                const boxH = 17;
+                items.forEach((item, i) => {
+                    const x = marginX + i * (boxW + gap);
+                    doc.setDrawColor(...COLOR_LINE);
+                    doc.setFillColor(248, 249, 252);
+                    doc.roundedRect(x, y, boxW, boxH, 1.5, 1.5, 'FD');
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(13);
+                    doc.setTextColor(...COLOR_ACCENT);
+                    doc.text(String(item.val), x + boxW / 2, y + 9, { align: 'center' });
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(7);
+                    doc.setTextColor(...COLOR_MUTED);
+                    doc.text(item.label, x + boxW / 2, y + 14, { align: 'center' });
+                });
+                y += boxH + 8;
+            }
+
+            function ensureSpace(needed) {
+                if (y + needed > pageH - 18) {
+                    doc.addPage();
+                    y = 18;
+                }
+            }
+
+            function leaderTable(headers, rows, colWidths) {
+                const rowH = 6.2;
+                let x = marginX;
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(7.6);
+                doc.setTextColor(...COLOR_MUTED);
+                headers.forEach((h, i) => {
+                    doc.text(h.label, x, y, { align: h.align || 'left' });
+                    x += colWidths[i];
+                });
+                y += 2.5;
+                doc.setDrawColor(...COLOR_LINE);
+                doc.setLineWidth(0.2);
+                doc.line(marginX, y, pageW - marginX, y);
+                y += 4.5;
+
+                rows.forEach(row => {
+                    x = marginX;
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(8.3);
+                    doc.setTextColor(...COLOR_TEXT);
+                    row.forEach((cell, i) => {
+                        doc.text(String(cell), x, y, { align: headers[i].align || 'left' });
+                        x += colWidths[i];
+                    });
+                    y += rowH;
+                });
+                y += 4;
+            }
+
+            // =========================================================
+            //  RESUMEN GENERAL
+            // =========================================================
+            sectionTitle('RESUMEN GENERAL');
+            statCardsRow([
+                { label: 'PARTIDOS JUGADOS', val: t.games },
+                { label: 'CARRERAS A FAVOR', val: t.runsFor },
+                { label: 'CARRERAS EN CONTRA', val: t.runsAgainst },
+                { label: 'DIFERENCIAL', val: `${t.diff >= 0 ? '+' : ''}${t.diff}` },
+            ]);
+
+            // =========================================================
+            //  OFENSIVA DE EQUIPO
+            // =========================================================
+            sectionTitle('ESTADÍSTICAS OFENSIVAS DE EQUIPO');
+            statCardsRow([
+                { label: 'AVG', val: formatAvg(t.avg) },
+                { label: 'OBP', val: formatAvg(t.obp) },
+                { label: 'SLG', val: formatAvg(t.slg) },
+                { label: 'OPS', val: t.ops.toFixed(3) },
+            ]);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8.3);
+            doc.setTextColor(...COLOR_MUTED);
+            doc.text(`Hits: ${t.hits}   ·   Jonrones: ${t.hr}   ·   Bases por bolas: ${t.bb}   ·   Ponches: ${t.k}`, marginX, y);
+            y += 8;
+
+            // =========================================================
+            //  PITCHEO Y DEFENSA DE EQUIPO
+            // =========================================================
+            sectionTitle('ESTADÍSTICAS DE PITCHEO Y DEFENSA');
+            statCardsRow([
+                { label: 'ERA', val: t.era.toFixed(2) },
+                { label: 'WHIP', val: t.whip.toFixed(2) },
+                { label: 'FLD%', val: formatAvg(teamFld) },
+                { label: 'ERRORES', val: teamE },
+            ]);
+
+            // =========================================================
+            //  FORTALEZAS Y ÁREAS DE MEJORA (vs. resto de la liga)
+            // =========================================================
+            ensureSpace(50);
+            sectionTitle('FORTALEZAS Y ÁREAS DE MEJORA');
+
+            const strengths = [
+                { label: 'Ofensiva (OPS de equipo)', good: t.ops >= leagueOps, detail: `Tuyo ${t.ops.toFixed(3)} · Liga ${leagueOps.toFixed(3)}`, desc: 'Combinación de embase y poder del equipo.' },
+                { label: 'Poder (HR por partido)', good: teamHRPerGame >= leagueHRPerGame, detail: `Tuyo ${teamHRPerGame.toFixed(2)} · Liga ${leagueHRPerGame.toFixed(2)}`, desc: 'Jonrones producidos en promedio por partido.' },
+                { label: 'Pitcheo (ERA de equipo)', good: t.era <= leagueEra, detail: `Tuyo ${t.era.toFixed(2)} · Liga ${leagueEra.toFixed(2)}`, desc: 'Carreras limpias permitidas por juego (menos es mejor).' },
+                { label: 'Control (WHIP de equipo)', good: t.whip <= leagueWhip, detail: `Tuyo ${t.whip.toFixed(2)} · Liga ${leagueWhip.toFixed(2)}`, desc: 'Corredores permitidos por entrada lanzada (menos es mejor).' },
+                { label: 'Confiabilidad (FLD% de equipo)', good: teamFld >= leagueTeamFld, detail: `Tuyo ${formatAvg(teamFld)} · Liga ${formatAvg(leagueTeamFld)}`, desc: 'Jugadas correctamente ejecutadas sobre el total de oportunidades.' },
+                { label: 'Control de errores (E/inning)', good: teamErrRate <= leagueErrRate, detail: `Tuyo ${teamErrRate.toFixed(2)} · Liga ${leagueErrRate.toFixed(2)}`, desc: 'Errores defensivos cometidos por inning jugado (menos es mejor).' },
+            ];
+
+            strengths.forEach(s => {
+                ensureSpace(14);
+                const color = s.good ? COLOR_GREEN : COLOR_RED;
+                const tagLabel = s.good ? 'FUERTE' : 'A MEJORAR';
+
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(9.5);
+                doc.setTextColor(...COLOR_TEXT);
+                doc.text(s.label, marginX, y);
+
+                doc.setFontSize(7.5);
+                doc.setTextColor(...color);
+                doc.text(tagLabel, pageW - marginX, y, { align: 'right' });
+
+                y += 4.3;
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(8);
+                doc.setTextColor(...COLOR_MUTED);
+                doc.text(`${s.desc}  (${s.detail})`, marginX, y);
+                y += 5.5;
+                doc.setDrawColor(...COLOR_LINE);
+                doc.setLineWidth(0.15);
+                doc.line(marginX, y, pageW - marginX, y);
+                y += 5.5;
+            });
+            doc.setFont('helvetica', 'italic');
+            doc.setFontSize(7);
+            doc.setTextColor(...COLOR_MUTED);
+            doc.text('Comparado contra el promedio del resto de los equipos de la liga.', marginX, y);
+            y += 9;
+
+            // =========================================================
+            //  LÍDERES DEL EQUIPO
+            // =========================================================
+            if (teamBatters.length) {
+                ensureSpace(45);
+                sectionTitle('LÍDERES DE BATEO (mín. 5 turnos al bat)');
+                leaderTable(
+                    [{ label: 'Jugador' }, { label: 'AVG', align: 'right' }, { label: 'OPS', align: 'right' }, { label: 'HR', align: 'right' }, { label: 'RBI', align: 'right' }],
+                    teamBatters.map(b => [
+                        `${b.name} #${b.number}`,
+                        formatAvg(calculateBattingAVG(b)),
+                        calculateBattingOPS(b).toFixed(3),
+                        b.hr || 0,
+                        b.rbi || 0
+                    ]),
+                    [80, 25, 25, 20, 20]
+                );
+            }
+
+            if (teamFielders.length) {
+                ensureSpace(45);
+                sectionTitle('LÍDERES DEFENSIVOS (mín. 3 innings)');
+                leaderTable(
+                    [{ label: 'Jugador' }, { label: 'Pos' }, { label: 'INN', align: 'right' }, { label: 'FLD%', align: 'right' }],
+                    teamFielders.map(d => [
+                        `${d.name} #${d.number}`,
+                        d.positions.length ? d.positions.join(',') : '—',
+                        d.innings,
+                        calculateFieldingPercent(d).toFixed(3)
+                    ]),
+                    [90, 40, 20, 28]
+                );
+            }
+
+            if (teamPitchers.length) {
+                ensureSpace(45);
+                sectionTitle('CUERPO DE PITCHEO');
+                leaderTable(
+                    [{ label: 'Jugador' }, { label: 'IP', align: 'right' }, { label: 'ERA', align: 'right' }, { label: 'WHIP', align: 'right' }, { label: 'K', align: 'right' }, { label: 'W-L', align: 'right' }],
+                    teamPitchers.map(p => [
+                        `${p.name} #${p.number}`,
+                        formatInnings(p.outs || 0),
+                        calculateERA(p, stdInnings).toFixed(2),
+                        calculateWHIP(p).toFixed(2),
+                        p.strikeouts || 0,
+                        `${p.wins || 0}-${p.losses || 0}`
+                    ]),
+                    [70, 25, 25, 25, 20, 20]
+                );
+            }
+
+            // ---- Footer en cada página ----
+            const totalPages = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= totalPages; i++) {
+                doc.setPage(i);
+                doc.setDrawColor(...COLOR_LINE);
+                doc.setLineWidth(0.3);
+                doc.line(marginX, pageH - 14, pageW - marginX, pageH - 14);
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(7.5);
+                doc.setTextColor(...COLOR_MUTED);
+                doc.text('Generado automáticamente con STATS HUB · Reporte de temporada regular', marginX, pageH - 9);
+                doc.text(`Página ${i} de ${totalPages}`, pageW - marginX, pageH - 9, { align: 'right' });
+            }
+
+            const safeTeam = t.team.replace(/[^a-z0-9]+/gi, '_');
+            doc.save(`Mi_Temporada_${safeTeam}.pdf`);
+            showToast('📄 Reporte de temporada generado');
         }
 
         // ============================================================
